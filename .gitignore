@@ -5,3 +5,4 @@ git-repo-temp
 packed
 .idea
 packed-test/generator-test
+*.tgz
