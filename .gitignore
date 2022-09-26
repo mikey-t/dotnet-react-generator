@@ -1,0 +1,7 @@
+node_modules
+dist
+example-project
+git-repo-temp
+packed
+.idea
+packed-test/generator-test

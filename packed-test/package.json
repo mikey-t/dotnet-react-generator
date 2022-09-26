@@ -1,0 +1,15 @@
+{
+  "name": "packed-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "go": "npx dotnet-react-generator --project-name=generator-test --db-name=generator_test --url=generator.mikeyt.net --overwrite"
+  },
+  "keywords": [],
+  "author": "Michael Thompson",
+  "license": "MIT",
+  "dependencies": {
+    "dotnet-react-generator": "file:../packed/dotnet-react-generator-0.0.1.tgz"
+  }
+}
