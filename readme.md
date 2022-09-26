@@ -4,7 +4,7 @@ Node script to generate a new project based on the repo [dotnet-react-sandbox](h
 
 Example:
 
-`npx @mikeyt23/dotnet-react-generator  --project-name=example-project --url=example.mikeyt.net --db-name=example_mikeyt`
+`npx dotnet-react-generator  --project-name=example-project --url=example.mikeyt.net --db-name=example_mikeyt`
 
 ## TODO
 
