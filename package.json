@@ -1,6 +1,6 @@
 {
   "name": "dotnet-react-generator",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A nodejs CLI util to generate a new .net react website project based on the dotnet-react-sandbox repo.",
   "repository": {
     "type": "git",
@@ -33,7 +33,8 @@
   "dependencies": {
     "@mikeyt23/node-cli-utils": "^1.3.0",
     "fs-extra": "^10.1.0",
-    "source-map-support": "^0.5.21"
+    "source-map-support": "^0.5.21",
+    "yargs": "^17.5.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",
@@ -48,7 +49,6 @@
     "gulp": "^4.0.2",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
-    "typescript": "^4.8.3",
-    "yargs": "^17.5.1"
+    "typescript": "^4.8.3"
   }
 }
