@@ -2,6 +2,10 @@
   "name": "dotnet-react-generator",
   "version": "0.0.1",
   "description": "A nodejs CLI util to generate a new .net react website project based on the dotnet-react-sandbox repo.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikey-t/dotnet-react-generator"
+  },
   "keywords": ["dotnet", "react", "generator"],
   "author": "Michael Thompson",
   "license": "MIT",
