@@ -63,7 +63,7 @@ export default class ProjectGenerator {
       const gitRepoTempPath = path.join(this._cwd, 'git-repo-temp')
       await fs.copy(gitRepoTempPath, this._projectPath)
     } else {
-      const cloneArgs = `clone -b main --single-branch --depth 1 git@github.com:mikey-t/dotnet-react-sandbox.git ${this._projectPath}`.split(' ')
+      const cloneArgs = `clone -b main --single-branch --depth 1 https://github.com/mikey-t/dotnet-react-sandbox.git ${this._projectPath}`.split(' ')
       await waitForProcess(spawn('git', cloneArgs, defaultSpawnOptions))
     }
   }
