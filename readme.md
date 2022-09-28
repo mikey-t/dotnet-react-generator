@@ -43,3 +43,8 @@ Then in a browser you can navigate to the running site at `https://local.<url yo
 - Ability to specify arbitrary absolute path for directory output instead of basing it on current working directory
 - Check that user has admin permissions before continuing
 - Check that user has dependencies installed beforehand (git, .net >= 6, node >= 16, docker, openssl)
+
+## Maybe TODO
+
+- Option to generate react-only site (so we can get the benefit of setting up hosts/cert, package.json/gulpfile tasks, vite config, etc)
+  - Create separate template repo to copy from

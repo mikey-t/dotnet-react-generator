@@ -4,6 +4,8 @@ import {spawn} from 'child_process'
 import fs from 'fs-extra'
 import PlaceholderProcessor from './PlaceholderProcessor'
 import {performance} from 'perf_hooks'
+import chalk from 'chalk'
+import DependencyChecker from './DependencyChecker'
 
 const {waitForProcess, defaultSpawnOptions} = require('@mikeyt23/node-cli-utils')
 const fsp = require('fs').promises
@@ -16,18 +18,32 @@ export default class ProjectGenerator {
   private readonly _args: GeneratorArgs
   private readonly _cwdSpawnOptions: object
   private readonly _localUrl: string
+  private readonly _depsChecker: DependencyChecker
 
-  constructor(workingDirectory: string, argv: any) {
+  constructor(workingDirectory: string, argv: any, dependencyChecker: DependencyChecker = new DependencyChecker()) {
     const args = this.getArgs(argv)
-    console.log(`using args: ${JSON.stringify(args)}\n`)
+    this.printArgs(argv)
     this._cwd = workingDirectory
     this._projectPath = path.join(workingDirectory, args.projectName)
     this._args = args
     this._cwdSpawnOptions = {...defaultSpawnOptions, cwd: this._projectPath}
     this._localUrl = `local.${args.url}`
+    this._depsChecker = dependencyChecker
+  }
+
+  private printArgs(args: GeneratorArgs) {
+    console.log('arguments passed:')
+    console.log(`--project-name=${args.projectName}`)
+    console.log(`--url=${args.url}`)
+    console.log(`--db-name=${args.dbName}`)
+    if (args.overwriteOutputDir) {
+      console.log(`--overwrite=true`)
+    }
+    console.log('')
   }
 
   async generateProject() {
+    await this.doStep(async () => this.checkDependencies(), 'check dependencies')
     await this.doStep(async () => this.ensureEmptyOutputDirectory(), 'ensure empty output directory')
     await this.doStep(async () => this.cloneProject(), 'clone project')
     await this.doStep(async () => this.updatePlaceholders(), 'update placeholders')
@@ -38,6 +54,16 @@ export default class ProjectGenerator {
     await this.doStep(async () => this.generateCert(), 'generate self-signed ssl cert')
     await this.doStep(async () => this.installCert(), 'install self-signed ssl cert')
     await this.doStep(async () => this.clientAppNpmInstall(), 'run npm install in new project\'s client dir')
+  }
+
+  private async checkDependencies() {
+    const report = await this._depsChecker.checkAllForDotnetReactSandbox()
+    console.log(this._depsChecker.getFormattedReport(report))
+    const depsCheckPassed = this._depsChecker.hasAllDependencies(report)
+    console.log(`Dependencies check passed: ${depsCheckPassed ? chalk.green('true') : chalk.red('false')}`,)
+    if (!depsCheckPassed) {
+      throw Error(chalk.red('dependencies check failed - see above'))
+    }
   }
 
   private async ensureEmptyOutputDirectory() {
@@ -125,10 +151,10 @@ export default class ProjectGenerator {
 
   private async doStep(func: Function, stepName: string): Promise<void> {
     const stepStart = performance.now()
-    console.log(`>>> starting: ${stepName}`)
+    console.log(chalk.green(`>>> starting: ${stepName}`))
     await func()
     const stepMillis = (performance.now() - stepStart).toFixed(1)
-    console.log(`>>> finished: ${stepName} (${stepMillis}ms)\n`)
+    console.log(chalk.green(`>>> finished: ${stepName} (${stepMillis}ms)\n`))
   }
 
   private getArgs(argv: any): GeneratorArgs {
