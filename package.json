@@ -1,6 +1,6 @@
 {
   "name": "dotnet-react-generator",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A nodejs CLI util to generate a new .net react website project based on the dotnet-react-sandbox repo.",
   "repository": {
     "type": "git",
@@ -18,7 +18,10 @@
   "types": "dist/src/index.d.js",
   "scripts": {
     "build": "gulp build",
-    "example": "node dist/src/index.js --project-name=example-project --url=example.mikeyt.net --db-name=example_mikeyt --overwrite",
+    "example": "node dist/src/index.js --output=example-project --url=example.mikeyt.net --db-name=example_mikeyt --overwrite",
+    "exampleAbsolutePath": "node dist/src/index.js --output=C:\\temp\\example-project --url=example.mikeyt.net --db-name=example_mikeyt --overwrite",
+    "noargs": "node dist/src/index.js",
+    "help": "node dist/src/index.js -h",
     "cleanupExample": "node dist/src/index.js --cleanup-example-project true",
     "watch": "gulp watch",
     "test": "mocha || exit 0",
@@ -34,6 +37,7 @@
   "dependencies": {
     "@mikeyt23/node-cli-utils": "^1.3.0",
     "chalk": "^4.1.2",
+    "commander": "^9.4.0",
     "fs-extra": "^10.1.0",
     "source-map-support": "^0.5.21",
     "which": "^2.0.2",

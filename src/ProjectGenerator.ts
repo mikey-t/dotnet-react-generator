@@ -6,11 +6,13 @@ import PlaceholderProcessor from './PlaceholderProcessor'
 import {performance} from 'perf_hooks'
 import chalk from 'chalk'
 import DependencyChecker from './DependencyChecker'
+import {OptionValues} from 'commander'
 
 const {waitForProcess, defaultSpawnOptions} = require('@mikeyt23/node-cli-utils')
 const fsp = require('fs').promises
 
 const useLocalFilesInsteadOfCloning = false // Combine true value here with gulp task cloneRepoIntoTempDir to speed up dev loop
+const runOnlyFirstFourSteps = false
 
 export default class ProjectGenerator {
   private readonly _cwd: string
@@ -20,25 +22,19 @@ export default class ProjectGenerator {
   private readonly _localUrl: string
   private readonly _depsChecker: DependencyChecker
 
-  constructor(workingDirectory: string, argv: any, dependencyChecker: DependencyChecker = new DependencyChecker()) {
-    const args = this.getArgs(argv)
-    this.printArgs(argv)
-    this._cwd = workingDirectory
-    this._projectPath = path.join(workingDirectory, args.projectName)
-    this._args = args
+  constructor(commanderOpts: OptionValues, currentWorkingDirectory: string, dependencyChecker: DependencyChecker = new DependencyChecker()) {
+    const generatorArgs = new GeneratorArgs(commanderOpts, currentWorkingDirectory)
+    this._args = generatorArgs
+    this._cwd = currentWorkingDirectory
+    this._projectPath = generatorArgs.outputAbsolutePath
     this._cwdSpawnOptions = {...defaultSpawnOptions, cwd: this._projectPath}
-    this._localUrl = `local.${args.url}`
+    this._localUrl = `local.${generatorArgs.url}`
     this._depsChecker = dependencyChecker
   }
 
-  private printArgs(args: GeneratorArgs) {
-    console.log('arguments passed:')
-    console.log(`--project-name=${args.projectName}`)
-    console.log(`--url=${args.url}`)
-    console.log(`--db-name=${args.dbName}`)
-    if (args.overwriteOutputDir) {
-      console.log(`--overwrite=true`)
-    }
+  printArgs() {
+    console.log('Options:')
+    console.log(JSON.stringify(this._args, null, 2))
     console.log('')
   }
 
@@ -47,13 +43,15 @@ export default class ProjectGenerator {
     await this.doStep(async () => this.ensureEmptyOutputDirectory(), 'ensure empty output directory')
     await this.doStep(async () => this.cloneProject(), 'clone project')
     await this.doStep(async () => this.updatePlaceholders(), 'update placeholders')
-    await this.doStep(async () => this.addHostsEntry(), 'add hosts entry')
-    await this.doStep(async () => this.npmInstallProjectRoot(), 'run npm install in new project root')
-    await this.doStep(async () => this.syncEnvFiles(), 'syncEnvFiles')
-    await this.doStep(async () => this.installOrUpdateDotnetEfTool(), 'install or update dotnet ef tool')
-    await this.doStep(async () => this.generateCert(), 'generate self-signed ssl cert')
-    await this.doStep(async () => this.installCert(), 'install self-signed ssl cert')
-    await this.doStep(async () => this.clientAppNpmInstall(), 'run npm install in new project\'s client dir')
+    if (!runOnlyFirstFourSteps) {
+      await this.doStep(async () => this.addHostsEntry(), 'add hosts entry')
+      await this.doStep(async () => this.npmInstallProjectRoot(), 'run npm install in new project root')
+      await this.doStep(async () => this.syncEnvFiles(), 'syncEnvFiles')
+      await this.doStep(async () => this.installOrUpdateDotnetEfTool(), 'install or update dotnet ef tool')
+      await this.doStep(async () => this.generateCert(), 'generate self-signed ssl cert')
+      await this.doStep(async () => this.installCert(), 'install self-signed ssl cert')
+      await this.doStep(async () => this.clientAppNpmInstall(), 'run npm install in new project\'s client dir')
+    }
   }
 
   private async checkDependencies() {
@@ -104,6 +102,9 @@ export default class ProjectGenerator {
     processor.replace(envTemplatePath, 'DEV_CERT_NAME=local.drs.mikeyt.net.pfx', `DEV_CERT_NAME=${this._localUrl}.pfx`)
     processor.replace(envTemplatePath, 'DB_NAME=drs', `DB_NAME=${this._args.dbName}`)
     processor.replace(envTemplatePath, 'DB_USER=drs', `DB_USER=${this._args.dbName}`)
+
+    const testSettingsPath = path.join(projectBasePath, 'src/WebServer.Test/TestSettings.cs')
+    processor.replace(testSettingsPath, 'test_drs', `test_${this._args.dbName}`)
   }
 
   private async addHostsEntry() {
@@ -155,27 +156,6 @@ export default class ProjectGenerator {
     await func()
     const stepMillis = (performance.now() - stepStart).toFixed(1)
     console.log(chalk.green(`>>> finished: ${stepName} (${stepMillis}ms)\n`))
-  }
-
-  private getArgs(argv: any): GeneratorArgs {
-    const projectName = argv['project-name'] || argv['p']
-    const url = argv['url'] || argv['u']
-    const dbName = argv['db-name']
-    const overwrite = !!argv['overwrite']
-
-    if (!projectName) {
-      throw Error('--project-name is required')
-    }
-
-    if (!dbName) {
-      throw Error('--db-name is required')
-    }
-
-    if (!url) {
-      throw Error('--url is required')
-    }
-
-    return new GeneratorArgs(projectName, url, dbName, overwrite)
   }
 
   static async cleanupExampleProject(cwd: string) {
