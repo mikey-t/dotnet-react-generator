@@ -22,7 +22,7 @@
     "exampleAbsolutePath": "node dist/src/index.js --output=C:\\temp\\example-project --url=example.mikeyt.net --db-name=example_mikeyt --overwrite",
     "noargs": "node dist/src/index.js",
     "help": "node dist/src/index.js -h",
-    "cleanupExample": "node dist/src/index.js --cleanup-example-project true",
+    "cleanupExample": "node dist/src/index.js --cleanup-example-project",
     "watch": "gulp watch",
     "test": "mocha || exit 0",
     "test:coverage": "nyc mocha || exit 0",
@@ -40,8 +40,7 @@
     "commander": "^9.4.0",
     "fs-extra": "^10.1.0",
     "source-map-support": "^0.5.21",
-    "which": "^2.0.2",
-    "yargs": "^17.5.1"
+    "which": "^2.0.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",

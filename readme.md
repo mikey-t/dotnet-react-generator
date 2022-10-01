@@ -2,13 +2,28 @@
 
 Node script to generate a new project based on the repo [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-sandbox).
 
-Example:
+Example (assuming you have a directory at `~/src`):
 
-`npx dotnet-react-generator  --project-name=example-project --url=example.mikeyt.net --db-name=example_mikeyt`
+```Powershell
+cd ~/src
+npx -y dotnet-react-generator  -o acme -u acme.com -d acme
+cd acme
+npm run dockerUp
+npm run dbInitialCreate
+npm run bothDbMigrate
+```
+
+Then in 2 terminals:
+
+`npm run server`
+
+`npm run client`
+
+Then navigate to https://local.acme.com.
 
 ## What It Does
 
-- Clone [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-sandbox) into directory with specified project name
+- Clone [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-sandbox) into directory specified with `-o` option
 - Update placeholders based on options passed (mostly in .env.template)
 - Add hosts entry: `127.0.0.1 local.<specified url>`
 - Npm install inside root of new project directory
@@ -33,18 +48,25 @@ Then you can run the project by opening 2 terminals inside the new project and r
 
 Then in a browser you can navigate to the running site at `https://local.<url you specified>`.
 
+For more info see [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-generator).
+
+## Remove Generated Project
+
+Manual steps to completely remove generated project:
+
+- If you have run `npm run dockerUp`, then run `npm run dockerDown`
+- Delete created directory
+- Remove hosts entry
+- Remove generated certificate
+
+## NPX gotcha
+
+If you run npx within an existing node project it will look in the project-local node_modules bin and won't find dotnet-react-generator. You must run it from a non-node project directory.
+
 ## TODO
 
-- Help command
-- Documentation
+- More documentation
 - Linux support
 - Mac support
-- Static site option that omits the docker/database/auth functionality
-- Ability to specify arbitrary absolute path for directory output instead of basing it on current working directory
-- Check that user has admin permissions before continuing
-- Check that user has dependencies installed beforehand (git, .net >= 6, node >= 16, docker, openssl)
-
-## Maybe TODO
-
-- Option to generate react-only site (so we can get the benefit of setting up hosts/cert, package.json/gulpfile tasks, vite config, etc)
-  - Create separate template repo to copy from
+- No database option that omits the docker/database/auth functionality
+- Static site option (just a plain react site with no dotnet backend)
