@@ -105,6 +105,15 @@ export default class ProjectGenerator {
 
     const testSettingsPath = path.join(projectBasePath, 'src/WebServer.Test/TestSettings.cs')
     processor.replace(testSettingsPath, 'test_drs', `test_${this._args.dbName}`)
+
+    const oldDotnetSlnPath = path.join(projectBasePath, 'dotnet-react-sandbox.sln')
+    const newDotnetSlnPath = path.join(projectBasePath, `${this._args.projectName}.sln`)
+    fs.renameSync(oldDotnetSlnPath, newDotnetSlnPath)
+
+    processor.replace(newDotnetSlnPath, 'dotnet-react-sandbox', this._args.projectName)
+    processor.replace(newDotnetSlnPath, 'dotnet-react-sandbox', this._args.projectName)
+
+    processor.replace(path.join(projectBasePath, 'readme.md'), 'dotnet-react-sandbox', this._args.projectName)
   }
 
   private async addHostsEntry() {
