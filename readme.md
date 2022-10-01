@@ -6,7 +6,7 @@ Example (assuming you have a directory at `~/src`):
 
 ```Powershell
 cd ~/src
-npx -y dotnet-react-generator  -o acme -u acme.com -d acme
+npx -y dotnet-react-generator@latest -o acme -u acme.com -d acme
 cd acme
 npm run dockerUp
 npm run dbInitialCreate
@@ -59,9 +59,10 @@ Manual steps to completely remove generated project:
 - Remove hosts entry
 - Remove generated certificate
 
-## NPX gotcha
+## NPX Gotchas
 
-If you run npx within an existing node project it will look in the project-local node_modules bin and won't find dotnet-react-generator. You must run it from a non-node project directory.
+- Depending on what version of npm you have installed, if you have run the npx command before and there's a new version available, `npx` won't get the new version unless you explicitly add `@latest` (or specific version) to the command, or explicitly clear your npx cache. 
+- If you run npx within an existing node project it will look in the project-local node_modules bin and won't find dotnet-react-generator. You must run it from a non-node project directory.
 
 ## TODO
 
