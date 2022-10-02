@@ -43,15 +43,16 @@ export default class ProjectGenerator {
     await this.doStep(async () => this.ensureEmptyOutputDirectory(), 'ensure empty output directory')
     await this.doStep(async () => this.cloneProject(), 'clone project')
     await this.doStep(async () => this.updatePlaceholders(), 'update placeholders')
-    if (!runOnlyFirstFourSteps) {
-      await this.doStep(async () => this.addHostsEntry(), 'add hosts entry')
-      await this.doStep(async () => this.npmInstallProjectRoot(), 'run npm install in new project root')
-      await this.doStep(async () => this.syncEnvFiles(), 'syncEnvFiles')
-      await this.doStep(async () => this.installOrUpdateDotnetEfTool(), 'install or update dotnet ef tool')
-      await this.doStep(async () => this.generateCert(), 'generate self-signed ssl cert')
-      await this.doStep(async () => this.installCert(), 'install self-signed ssl cert')
-      await this.doStep(async () => this.clientAppNpmInstall(), 'run npm install in new project\'s client dir')
-    }
+
+    if (runOnlyFirstFourSteps) return
+
+    await this.doStep(async () => this.addHostsEntry(), 'add hosts entry')
+    await this.doStep(async () => this.npmInstallProjectRoot(), 'run npm install in new project root')
+    await this.doStep(async () => this.syncEnvFiles(), 'syncEnvFiles')
+    await this.doStep(async () => this.installOrUpdateDotnetEfTool(), 'install or update dotnet ef tool')
+    await this.doStep(async () => this.generateCert(), 'generate self-signed ssl cert')
+    await this.doStep(async () => this.installCert(), 'install self-signed ssl cert')
+    await this.doStep(async () => this.clientAppNpmInstall(), 'run npm install in new project\'s client dir')
   }
 
   private async checkDependencies() {
@@ -116,6 +117,9 @@ export default class ProjectGenerator {
     processor.replace(newDotnetSlnPath, 'dotnet-react-sandbox', this._args.projectName)
 
     processor.replace(path.join(projectBasePath, 'readme.md'), 'dotnet-react-sandbox', this._args.projectName)
+
+    processor.replace(path.join(projectBasePath, 'src/client/src/components/Copyright.tsx'), 'Mike Thompson', 'John Doe')
+    processor.replace(path.join(projectBasePath, 'src/client/src/components/Copyright.tsx'), 'https://mikeyt.net', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')
   }
 
   private async addHostsEntry() {
