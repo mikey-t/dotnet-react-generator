@@ -90,6 +90,8 @@ export default class ProjectGenerator {
       const cloneArgs = `clone -b main --single-branch --depth 1 https://github.com/mikey-t/dotnet-react-sandbox.git ${this._projectPath}`.split(' ')
       await waitForProcess(spawn('git', cloneArgs, defaultSpawnOptions))
     }
+
+    await fsp.rm(path.join(this._projectPath, '.git'), {recursive: true})
   }
 
   private async updatePlaceholders() {
