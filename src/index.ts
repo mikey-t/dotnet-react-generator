@@ -6,7 +6,7 @@ import ProjectGenerator from './ProjectGenerator'
 import DependencyChecker from './DependencyChecker'
 import chalk from 'chalk'
 
-const version = '0.0.12'
+const version = '0.0.13'
 const {performance} = require('perf_hooks')
 
 const program = new Command()
