@@ -5,11 +5,14 @@ import fs from 'fs-extra'
 import PlaceholderProcessor from './PlaceholderProcessor'
 import {performance} from 'perf_hooks'
 import chalk from 'chalk'
-import DependencyChecker from './DependencyChecker'
+import DependencyChecker, { Platform } from './DependencyChecker'
 import {OptionValues} from 'commander'
 
 const {waitForProcess, defaultSpawnOptions} = require('@mikeyt23/node-cli-utils')
 const fsp = require('fs').promises
+const process = require('process')
+const os = require('os')
+const {spawnSync} = require('child_process')
 
 const useLocalFilesInsteadOfCloning = false // Combine true value here with gulp task cloneRepoIntoTempDir to speed up dev loop
 const runOnlyFirstFourSteps = false
@@ -21,6 +24,8 @@ export default class ProjectGenerator {
   private readonly _cwdSpawnOptions: object
   private readonly _localUrl: string
   private readonly _depsChecker: DependencyChecker
+  private readonly _platform: Platform
+  private _sudoerUsername: string = ''
 
   constructor(commanderOpts: OptionValues, currentWorkingDirectory: string, dependencyChecker: DependencyChecker = new DependencyChecker()) {
     const generatorArgs = new GeneratorArgs(commanderOpts, currentWorkingDirectory)
@@ -30,6 +35,7 @@ export default class ProjectGenerator {
     this._cwdSpawnOptions = {...defaultSpawnOptions, cwd: this._projectPath}
     this._localUrl = `local.${generatorArgs.url}`
     this._depsChecker = dependencyChecker
+    this._platform = dependencyChecker.getPlatform()
   }
 
   printArgs() {
@@ -40,9 +46,18 @@ export default class ProjectGenerator {
 
   async generateProject() {
     await this.doStep(async () => this.checkDependencies(), 'check dependencies')
+
+    if (this._platform === 'linux') {
+      this.populateSudoerUsername()
+    }
+
     await this.doStep(async () => this.ensureEmptyOutputDirectory(), 'ensure empty output directory')
     await this.doStep(async () => this.cloneProject(), 'clone project')
     await this.doStep(async () => this.updatePlaceholders(), 'update placeholders')
+
+    if (this._platform === 'linux') {
+      await this.doStep(async () => this.chown(), 'chown on output directory')
+    }
 
     if (runOnlyFirstFourSteps) return
 
@@ -51,8 +66,49 @@ export default class ProjectGenerator {
     await this.doStep(async () => this.syncEnvFiles(), 'syncEnvFiles')
     await this.doStep(async () => this.installOrUpdateDotnetEfTool(), 'install or update dotnet ef tool')
     await this.doStep(async () => this.generateCert(), 'generate self-signed ssl cert')
-    await this.doStep(async () => this.installCert(), 'install self-signed ssl cert')
+
+    if (this._platform !== 'linux') {
+      // Chrome on Linux does not use system certs without significant extra configuration. See manual instruction in dotnet-react-sandbox readme.
+      await this.doStep(async () => this.installCert(), 'install self-signed ssl cert')
+    }
+    
     await this.doStep(async () => this.clientAppNpmInstall(), 'run npm install in new project\'s client dir')
+  }
+
+  private populateSudoerUsername() {
+    let sudoerId = process.env.SUDO_UID
+
+    if (sudoerId === undefined) {
+      throw Error('cannot get sudoer username - process not started with sudo')
+    }
+
+    console.log(`attempting to find username for sudoer id ${sudoerId}`)
+
+    let childProcess = spawnSync('id', ['-nu', sudoerId], {encoding: 'utf8'})
+    if (childProcess.error) {
+      throw childProcess.error
+    }
+
+    let username = childProcess.stdout
+
+    if (!username) {
+      throw Error('unable to get sudoer username')
+    }
+
+    username = username.replace('\n', '')
+
+    console.log(`using sudoer username: ${username}`)
+
+    this._sudoerUsername = username
+  }
+
+  async chown(): Promise<void> {
+    const userId = process.env.SUDO_UID
+    if (!userId) {
+      throw Error('could not get your user id to run chown')
+    }
+
+    await waitForProcess(spawn('sudo', ['chown', '-R', `${userId}:${userId}`, this._projectPath], defaultSpawnOptions))
   }
 
   private async checkDependencies() {
@@ -116,14 +172,14 @@ export default class ProjectGenerator {
     processor.replace(newDotnetSlnPath, 'dotnet-react-sandbox', this._args.projectName)
     processor.replace(newDotnetSlnPath, 'dotnet-react-sandbox', this._args.projectName)
 
-    processor.replace(path.join(projectBasePath, 'readme.md'), 'dotnet-react-sandbox', this._args.projectName)
+    processor.replace(path.join(projectBasePath, 'README.md'), 'dotnet-react-sandbox', this._args.projectName)
 
     processor.replace(path.join(projectBasePath, 'src/client/src/components/Copyright.tsx'), 'Mike Thompson', 'John Doe')
     processor.replace(path.join(projectBasePath, 'src/client/src/components/Copyright.tsx'), 'https://mikeyt.net', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')
   }
 
   private async addHostsEntry() {
-    const hostsPath = 'C:/Windows/System32/drivers/etc/hosts'
+    const hostsPath = this._platform === 'win' ? 'C:/Windows/System32/drivers/etc/hosts' : '/etc/hosts'
     const entry = `127.0.0.1 ${this._localUrl}`
 
     const hostsFileString = fs.readFileSync(hostsPath)
@@ -137,7 +193,17 @@ export default class ProjectGenerator {
   }
 
   private async npmInstallProjectRoot() {
-    await waitForProcess(spawn('npm', ['install'], this._cwdSpawnOptions))
+    if (this._platform === 'win') {
+      await waitForProcess(spawn('npm', ['install'], this._cwdSpawnOptions))
+    } else if (this._platform === 'linux') {
+      await this.runAsSudoer('npm install', this._cwdSpawnOptions)
+    }
+  }
+
+  private async runAsSudoer(cmd: string, spawnOptions: any) {
+    let cmdArgs = `-H -u ${this._sudoerUsername} bash -c`.split(' ')
+    cmdArgs.push(`'${cmd}'`)
+    await waitForProcess(spawn('sudo', cmdArgs, spawnOptions))
   }
 
   private async syncEnvFiles() {
@@ -145,8 +211,30 @@ export default class ProjectGenerator {
   }
 
   private async installOrUpdateDotnetEfTool() {
-    const cmdArgs = `run installDotnetEfTool || npm run updateDotnetEfTool`.split(' ')
-    await waitForProcess(spawn('npm', cmdArgs, this._cwdSpawnOptions))
+    if (this._platform === 'win') {
+      const cmdArgs = `run installDotnetEfTool || npm run updateDotnetEfTool`.split(' ')
+      await waitForProcess(spawn('npm', cmdArgs, this._cwdSpawnOptions))
+    } else if (this._platform === 'linux') {
+      await this.runAsSudoer('dotnet tool install --global dotnet-ef  || dotnet tool update --global dotnet-ef', defaultSpawnOptions)
+    }
+  }
+
+  private async getSudoerUsername(): Promise<string> {
+    let sudoerId = process.env.SUDO_UID
+
+    if (sudoerId === undefined) {
+      throw Error('process not started with sudo - cannot find sudoer id')
+    }
+
+    console.log(`attempting to find username for id ${sudoerId}`)
+    let childProcess = spawnSync('id', ['-nu', sudoerId], {encoding: 'utf8'})
+    if (childProcess.error) {
+      throw childProcess.error
+    }
+
+    let username = childProcess.stdout
+    console.log(`sudoer username: ${username}`)
+    return username
   }
 
   private async generateCert() {
@@ -155,14 +243,25 @@ export default class ProjectGenerator {
   }
 
   private async installCert() {
-    const cmdArgs = `run winInstallCert -- --name=${this._localUrl}.pfx`.split(' ')
-    await waitForProcess(spawn('npm', cmdArgs, this._cwdSpawnOptions))
+    let cmdArgs: string[] = []
+    if (this._platform === 'win') {
+      cmdArgs = `run winInstallCert -- --name=${this._localUrl}.pfx`.split(' ')
+      await waitForProcess(spawn('npm', cmdArgs, this._cwdSpawnOptions))
+    } else if (this._platform === 'linux') {
+      console.log('linux cert automated install not supported - see manual instructions in dotnet-react-sandbox readme')
+    } else if (this._platform === 'mac') {
+      throw Error('mac cert install not implemented yet')
+    } 
   }
 
   private async clientAppNpmInstall() {
     const clientDir = path.join(this._projectPath, 'src/client')
     const spawnOptions = {...defaultSpawnOptions, cwd: clientDir}
-    await waitForProcess(spawn('npm', ['install'], spawnOptions))
+    if (this._platform === 'win') {
+      await waitForProcess(spawn('npm', ['install'], spawnOptions))
+    } else if (this._platform === 'linux') {
+      await this.runAsSudoer('npm install', spawnOptions)
+    }
   }
 
   private async doStep(func: Function, stepName: string): Promise<void> {
@@ -178,7 +277,7 @@ export default class ProjectGenerator {
     const projectPath = path.join(cwd, 'example-project')
 
     console.log('removing host entry')
-    const hostsPath = 'C:/Windows/System32/drivers/etc/hosts'
+    const hostsPath = process.platform === 'win32' ? 'C:/Windows/System32/drivers/etc/hosts' : '/etc/hosts'
     const fileString = fs.readFileSync(hostsPath, 'utf-8')
     const entry = `\n127.0.0.1 local.example.mikeyt.net`
     const newFileString = fileString.replace(new RegExp(entry, 'g'), '')
@@ -188,6 +287,8 @@ export default class ProjectGenerator {
     if (fs.pathExistsSync(projectPath)) {
       await fsp.rm(projectPath, {recursive: true})
     }
+
+    if (process.platform !== 'win32') return
 
     await ProjectGenerator.uninstallExampleCert(cwd)
   }

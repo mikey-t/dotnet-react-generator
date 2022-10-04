@@ -6,14 +6,14 @@ import ProjectGenerator from './ProjectGenerator'
 import DependencyChecker from './DependencyChecker'
 import chalk from 'chalk'
 
-const version = '0.0.11'
+const version = '0.0.12'
 const {performance} = require('perf_hooks')
 
 const program = new Command()
 const cwd = process.cwd()
 const startTime = performance.now()
 
-const cleanupCalled = process.argv.includes('--cleanup-example-project')
+const cleanupCalled = process.argv.includes('--cleanup-example')
 const depsCalled = process.argv.includes('--deps')
 const overrideOptionCalled = cleanupCalled || depsCalled
 

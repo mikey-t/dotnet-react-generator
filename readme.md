@@ -64,6 +64,19 @@ Manual steps to completely remove generated project:
 - Depending on what version of npm you have installed, if you have run the npx command before and there's a new version available, `npx` won't get the new version unless you explicitly add `@latest` (or specific version) to the command, or explicitly clear your npx cache. 
 - If you run npx within an existing node project it will look in the project-local node_modules bin and won't find dotnet-react-generator. You must run it from a non-node project directory.
 
+## Linux Support
+
+This has only been test on Ubuntu 20.04 LTS. Other versions of Ubuntu and Debian will probably also work.
+
+All generator steps should work on linux except certificate installation. Chrome on linux does not use system certificates so automating the install would require significant work. Instead, install the certificate manually (after you've run the generator) by doing the following:
+
+- In Chrome, go to chrome://settings/certificates
+- Select Authorities -> import
+- Select your generated .crt file from ./cert/ (if you haven't generated it, use the opensslGenCert package.json/gulp task inside the generated project)
+- Check box for "Trust certificate for identifying websites"
+- Click OK
+- Reload site
+
 ## TODO
 
 - More documentation

@@ -2,22 +2,27 @@ const {waitForProcess, defaultSpawnOptions} = require('@mikeyt23/node-cli-utils'
 const {spawn, spawnSync} = require('child_process')
 const which = require('which')
 const chalk = require('chalk')
+const process = require('process')
 
-type Platform = 'win' | 'linux' | 'mac'
+export type Platform = 'win' | 'linux' | 'mac'
 type DependenciesReport = { [id: string]: boolean }
 
 export default class DependencyChecker {
   private readonly _platform: Platform
 
   constructor() {
+    this._platform = this.getPlatform()
+  }
+
+  getPlatform(): Platform {
     const platform = process.platform
 
     if (platform === 'win32') {
-      this._platform = 'win'
+      return 'win'
     } else if (platform === 'darwin') {
-      this._platform = 'mac'
+      return 'mac'
     } else if (platform === 'linux') {
-      this._platform = 'linux'
+      return 'linux'
     } else {
       throw Error(`Platform not supported: ${platform}. Nodejs process.platform must be win32, darwin or linux.`)
     }
@@ -70,6 +75,7 @@ export default class DependencyChecker {
     if (this._platform === 'win') {
       return await this.winHasElevatedPerms()
     } else if (this._platform === 'linux') {
+      return await this.linuxHasElevatedPerms()
       throw Error('linux not yet supported')
     } else if (this._platform === 'mac') {
       throw Error('mac not yet supported')
@@ -86,6 +92,11 @@ export default class DependencyChecker {
     } catch {
       return false
     }
+  }
+
+  async linuxHasElevatedPerms(): Promise<boolean> {
+    const uid = process.getuid()
+    return uid === 0
   }
 
   async hasGit(): Promise<boolean> {

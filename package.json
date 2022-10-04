@@ -1,6 +1,6 @@
 {
   "name": "dotnet-react-generator",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "A nodejs CLI util to generate a new .net react website project based on the dotnet-react-sandbox repo.",
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
     "exampleAbsolutePath": "node dist/src/index.js --output=C:\\temp\\example-project --url=example.mikeyt.net --db-name=example_mikeyt --overwrite",
     "noargs": "node dist/src/index.js",
     "help": "node dist/src/index.js -h",
-    "cleanupExample": "node dist/src/index.js --cleanup-example-project",
+    "cleanupExample": "node dist/src/index.js --cleanup-example",
     "watch": "gulp watch",
     "test": "mocha || exit 0",
     "test:coverage": "nyc mocha || exit 0",
