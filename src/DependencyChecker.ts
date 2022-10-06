@@ -76,9 +76,8 @@ export default class DependencyChecker {
       return await this.winHasElevatedPerms()
     } else if (this._platform === 'linux') {
       return await this.linuxHasElevatedPerms()
-      throw Error('linux not yet supported')
     } else if (this._platform === 'mac') {
-      throw Error('mac not yet supported')
+      return await this.linuxHasElevatedPerms()
     }
 
     return false
@@ -159,6 +158,25 @@ export default class DependencyChecker {
   }
 
   async hasOpenssl(): Promise<boolean> {
+    if (this._platform === 'mac') {
+      let childProc = spawnSync('brew', ['--prefix', 'openssl'], { encoding: 'utf-8' })
+      if (childProc.error) {
+        return false
+      }
+
+      const output = childProc.stdout
+
+      if (!output || output.length === 0) {
+        return false
+      }
+
+      if (output.toLowerCase().startsWith('error')) {
+        return false
+      }
+
+      return true
+    }
+
     return !!which.sync('openssl', {nothrow: true})
   }
 }

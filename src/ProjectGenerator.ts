@@ -47,7 +47,7 @@ export default class ProjectGenerator {
   async generateProject() {
     await this.doStep(async () => this.checkDependencies(), 'check dependencies')
 
-    if (this._platform === 'linux') {
+    if (this._platform !== 'win') {
       this.populateSudoerUsername()
     }
 
@@ -55,7 +55,7 @@ export default class ProjectGenerator {
     await this.doStep(async () => this.cloneProject(), 'clone project')
     await this.doStep(async () => this.updatePlaceholders(), 'update placeholders')
 
-    if (this._platform === 'linux') {
+    if (this._platform !== 'win') {
       await this.doStep(async () => this.chown(), 'chown on output directory')
     }
 
@@ -67,7 +67,7 @@ export default class ProjectGenerator {
     await this.doStep(async () => this.installOrUpdateDotnetEfTool(), 'install or update dotnet ef tool')
     await this.doStep(async () => this.generateCert(), 'generate self-signed ssl cert')
 
-    if (this._platform !== 'linux') {
+    if (this._platform === 'win') {
       // Chrome on Linux does not use system certs without significant extra configuration. See manual instruction in dotnet-react-sandbox readme.
       await this.doStep(async () => this.installCert(), 'install self-signed ssl cert')
     }
@@ -108,7 +108,8 @@ export default class ProjectGenerator {
       throw Error('could not get your user id to run chown')
     }
 
-    await waitForProcess(spawn('sudo', ['chown', '-R', `${userId}:${userId}`, this._projectPath], defaultSpawnOptions))
+    // await waitForProcess(spawn('sudo', ['chown', '-R', `${userId}:${userId}`, this._projectPath], defaultSpawnOptions))
+    await waitForProcess(spawn('sudo', ['chown', '-R', `${userId}`, this._projectPath], defaultSpawnOptions))
   }
 
   private async checkDependencies() {
@@ -195,7 +196,7 @@ export default class ProjectGenerator {
   private async npmInstallProjectRoot() {
     if (this._platform === 'win') {
       await waitForProcess(spawn('npm', ['install'], this._cwdSpawnOptions))
-    } else if (this._platform === 'linux') {
+    } else {
       await this.runAsSudoer('npm install', this._cwdSpawnOptions)
     }
   }
@@ -238,6 +239,9 @@ export default class ProjectGenerator {
   }
 
   private async generateCert() {
+    if (this._platform === 'mac') {
+      throw Error('cert generation not yet supported')
+    }
     const cmdArgs = `run opensslGenCert -- --url=${this._localUrl}`.split(' ')
     await waitForProcess(spawn('npm', cmdArgs, this._cwdSpawnOptions))
   }
