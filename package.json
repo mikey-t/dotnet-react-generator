@@ -29,7 +29,7 @@
     "clean": "gulp clean",
     "pack": "gulp pack",
     "tsc": "tsc",
-    "prepublish": "gulp build",
+    "buildAndPublish": "gulp build && npm publish",
     "cloneRepoIntoTempDir": "gulp cloneRepoIntoTempDir",
     "cleanPackedTest": "gulp cleanPackedTest",
     "deps": "node dist/src/index.js --deps"
