@@ -11,11 +11,9 @@ import {OptionValues} from 'commander'
 const {waitForProcess, defaultSpawnOptions} = require('@mikeyt23/node-cli-utils')
 const fsp = require('fs').promises
 const process = require('process')
-const os = require('os')
 const {spawnSync} = require('child_process')
 
 const useLocalFilesInsteadOfCloning = false // Combine true value here with gulp task cloneRepoIntoTempDir to speed up dev loop
-const runOnlyFirstFourSteps = false
 
 export default class ProjectGenerator {
   private readonly _cwd: string
@@ -59,8 +57,6 @@ export default class ProjectGenerator {
       await this.doStep(async () => this.chown(), 'chown on output directory')
     }
 
-    if (runOnlyFirstFourSteps) return
-
     await this.doStep(async () => this.addHostsEntry(), 'add hosts entry')
     await this.doStep(async () => this.npmInstallProjectRoot(), 'run npm install in new project root')
     await this.doStep(async () => this.syncEnvFiles(), 'syncEnvFiles')
@@ -68,11 +64,13 @@ export default class ProjectGenerator {
     await this.doStep(async () => this.generateCert(), 'generate self-signed ssl cert')
 
     if (this._platform === 'win') {
-      // Chrome on Linux does not use system certs without significant extra configuration. See manual instruction in dotnet-react-sandbox readme.
+      // Chrome on Linux does not use system certificates without significant extra configuration.
+      // Mac support for adding certs via CLI is obnoxiously bad and different depending
+      // on the specific macOS version - see manual instruction in dotnet-react-sandbox readme.
       await this.doStep(async () => this.installCert(), 'install self-signed ssl cert')
     }
     
-    await this.doStep(async () => this.clientAppNpmInstall(), 'run npm install in new project\'s client dir')
+    await this.doStep(async () => this.clientAppNpmInstall(), 'run npm install in new project\'s client directory')
   }
 
   private populateSudoerUsername() {
@@ -108,8 +106,11 @@ export default class ProjectGenerator {
       throw Error('could not get your user id to run chown')
     }
 
-    // await waitForProcess(spawn('sudo', ['chown', '-R', `${userId}:${userId}`, this._projectPath], defaultSpawnOptions))
-    await waitForProcess(spawn('sudo', ['chown', '-R', `${userId}`, this._projectPath], defaultSpawnOptions))
+    if (this._platform === 'linux') {
+      await waitForProcess(spawn('sudo', ['chown', '-R', `${userId}:${userId}`, this._projectPath], defaultSpawnOptions))
+    } else if (this._platform === 'mac') {
+      await waitForProcess(spawn('sudo', ['chown', '-R', `${userId}`, this._projectPath], defaultSpawnOptions))
+    }
   }
 
   private async checkDependencies() {
@@ -218,24 +219,6 @@ export default class ProjectGenerator {
     } else if (this._platform === 'linux') {
       await this.runAsSudoer('dotnet tool install --global dotnet-ef  || dotnet tool update --global dotnet-ef', defaultSpawnOptions)
     }
-  }
-
-  private async getSudoerUsername(): Promise<string> {
-    let sudoerId = process.env.SUDO_UID
-
-    if (sudoerId === undefined) {
-      throw Error('process not started with sudo - cannot find sudoer id')
-    }
-
-    console.log(`attempting to find username for id ${sudoerId}`)
-    let childProcess = spawnSync('id', ['-nu', sudoerId], {encoding: 'utf8'})
-    if (childProcess.error) {
-      throw childProcess.error
-    }
-
-    let username = childProcess.stdout
-    console.log(`sudoer username: ${username}`)
-    return username
   }
 
   private async generateCert() {

@@ -170,11 +170,7 @@ export default class DependencyChecker {
         return false
       }
 
-      if (output.toLowerCase().startsWith('error')) {
-        return false
-      }
-
-      return true
+      return !output.toLowerCase().startsWith('error');
     }
 
     return !!which.sync('openssl', {nothrow: true})
