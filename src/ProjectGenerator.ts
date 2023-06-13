@@ -1,17 +1,18 @@
 import GeneratorArgs from './GeneratorArgs'
 import path from 'path'
-import {spawn} from 'child_process'
+import { spawn } from 'child_process'
 import fs from 'fs-extra'
 import PlaceholderProcessor from './PlaceholderProcessor'
-import {performance} from 'perf_hooks'
+import { performance } from 'perf_hooks'
 import chalk from 'chalk'
 import DependencyChecker, { Platform } from './DependencyChecker'
-import {OptionValues} from 'commander'
+import { OptionValues } from 'commander'
+const os = require('os')
 
-const {waitForProcess, defaultSpawnOptions} = require('@mikeyt23/node-cli-utils')
+const { waitForProcess, defaultSpawnOptions } = require('@mikeyt23/node-cli-utils')
 const fsp = require('fs').promises
 const process = require('process')
-const {spawnSync} = require('child_process')
+const { spawnSync } = require('child_process')
 
 const useLocalFilesInsteadOfCloning = false // Combine true value here with gulp task cloneRepoIntoTempDir to speed up dev loop
 
@@ -30,7 +31,7 @@ export default class ProjectGenerator {
     this._args = generatorArgs
     this._cwd = currentWorkingDirectory
     this._projectPath = generatorArgs.outputAbsolutePath
-    this._cwdSpawnOptions = {...defaultSpawnOptions, cwd: this._projectPath}
+    this._cwdSpawnOptions = { ...defaultSpawnOptions, cwd: this._projectPath }
     this._localUrl = `local.${generatorArgs.url}`
     this._depsChecker = dependencyChecker
     this._platform = dependencyChecker.getPlatform()
@@ -69,7 +70,7 @@ export default class ProjectGenerator {
       // on the specific macOS version - see manual instruction in dotnet-react-sandbox readme.
       await this.doStep(async () => this.installCert(), 'install self-signed ssl cert')
     }
-    
+
     await this.doStep(async () => this.clientAppNpmInstall(), 'run npm install in new project\'s client directory')
   }
 
@@ -82,7 +83,7 @@ export default class ProjectGenerator {
 
     console.log(`attempting to find username for sudoer id ${sudoerId}`)
 
-    let childProcess = spawnSync('id', ['-nu', sudoerId], {encoding: 'utf8'})
+    let childProcess = spawnSync('id', ['-nu', sudoerId], { encoding: 'utf8' })
     if (childProcess.error) {
       throw childProcess.error
     }
@@ -132,7 +133,7 @@ export default class ProjectGenerator {
     }
 
     if (this._args.overwriteOutputDir) {
-      await fsp.rm(outputDir, {recursive: true})
+      await fsp.rm(outputDir, { recursive: true })
       return
     }
 
@@ -150,7 +151,7 @@ export default class ProjectGenerator {
       await waitForProcess(spawn('git', cloneArgs, defaultSpawnOptions))
     }
 
-    await fsp.rm(path.join(this._projectPath, '.git'), {recursive: true})
+    await fsp.rm(path.join(this._projectPath, '.git'), { recursive: true })
   }
 
   private async updatePlaceholders() {
@@ -238,12 +239,12 @@ export default class ProjectGenerator {
       console.log('linux cert automated install not supported - see manual instructions in dotnet-react-sandbox readme')
     } else if (this._platform === 'mac') {
       throw Error('mac cert install not implemented yet')
-    } 
+    }
   }
 
   private async clientAppNpmInstall() {
     const clientDir = path.join(this._projectPath, 'src/client')
-    const spawnOptions = {...defaultSpawnOptions, cwd: clientDir}
+    const spawnOptions = { ...defaultSpawnOptions, cwd: clientDir }
     if (this._platform === 'win') {
       await waitForProcess(spawn('npm', ['install'], spawnOptions))
     } else if (this._platform === 'linux') {
@@ -272,7 +273,7 @@ export default class ProjectGenerator {
 
     console.log('deleting example-project directory')
     if (fs.pathExistsSync(projectPath)) {
-      await fsp.rm(projectPath, {recursive: true})
+      await fsp.rm(projectPath, { recursive: true })
     }
 
     if (process.platform !== 'win32') return
@@ -281,15 +282,13 @@ export default class ProjectGenerator {
   }
 
   private static async uninstallExampleCert(cwd: string) {
-    console.log('uninstalling cert')
-    const psFilename = 'UninstallExampleCert.ps1'
-    const psFilePath = path.join(cwd, psFilename)
-    if (fs.pathExistsSync(psFilePath)) {
-      await fsp.rm(psFilePath)
-    }
-    const psFileContents = 'Get-ChildItem Cert:\\\\LocalMachine\\\\Root | Where-Object { $_.Subject -match \'local.example.mikeyt.net\' } | Remove-Item'
-    fs.writeFileSync(psFilePath, psFileContents)
-    await waitForProcess(spawn('powershell', ['-File', psFilename], {...defaultSpawnOptions, cwd: cwd}))
-    await fsp.rm(psFilePath)
+    const psCommand = `$env:PSModulePath = [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine'); Get-ChildItem Cert:\\LocalMachine\\Root | Where-Object { $_.Subject -match 'local.example.mikeyt.net' } | Remove-Item`;
+
+    await waitForProcess(spawn('powershell', []))
+
+    const tmpFile = path.join(os.tmpdir(), 'tmp.ps1')
+    fs.writeFileSync(tmpFile, psCommand)
+
+    await waitForProcess(spawn('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', psCommand]))
   }
 }
