@@ -283,12 +283,6 @@ export default class ProjectGenerator {
 
   private static async uninstallExampleCert(cwd: string) {
     const psCommand = `$env:PSModulePath = [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine'); Get-ChildItem Cert:\\LocalMachine\\Root | Where-Object { $_.Subject -match 'local.example.mikeyt.net' } | Remove-Item`;
-
-    await waitForProcess(spawn('powershell', []))
-
-    const tmpFile = path.join(os.tmpdir(), 'tmp.ps1')
-    fs.writeFileSync(tmpFile, psCommand)
-
     await waitForProcess(spawn('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', psCommand]))
   }
 }
