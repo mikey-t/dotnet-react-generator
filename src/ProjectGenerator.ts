@@ -226,14 +226,14 @@ export default class ProjectGenerator {
     if (this._platform === 'mac') {
       throw Error('cert generation not yet supported')
     }
-    const cmdArgs = `run opensslGenCert -- --url=${this._localUrl}`.split(' ')
+    const cmdArgs = `run generateCert -- --url=${this._localUrl}`.split(' ')
     await waitForProcess(spawn('npm', cmdArgs, this._cwdSpawnOptions))
   }
 
   private async installCert() {
     let cmdArgs: string[] = []
     if (this._platform === 'win') {
-      cmdArgs = `run winInstallCert -- --name=${this._localUrl}.pfx`.split(' ')
+      cmdArgs = `run winInstallCert -- --url=${this._localUrl}`.split(' ')
       await waitForProcess(spawn('npm', cmdArgs, this._cwdSpawnOptions))
     } else if (this._platform === 'linux') {
       console.log('linux cert automated install not supported - see manual instructions in dotnet-react-sandbox readme')

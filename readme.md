@@ -58,7 +58,7 @@ For more info see [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react
 Chrome on linux does not use the normal system certificates (the `ca-certificates` package won't affect chrome since chrome does not use /usr/local/share/ca-certificates). Although it's possible to install a few things and configure a Linux system so scripted cert install is possible, it's also pretty easy to just install it manually by following these steps:
 - In Chrome, go to chrome://settings/certificates (or navigate there via settings -> Privacy and Security -> Advanced -> Manage Certificates)
 - Select Authorities -> import
-- Select your generated .crt file from ./cert/ (if you haven't generated it, see the opensslGenCert command)
+- Select your generated .crt file from ./cert/ (if you haven't generated it, see the generateCert command)
 - Check box that says "Trust certificate for identifying websites"
 - Click OK
 
@@ -82,9 +82,9 @@ No action required. If you ran this generator script then it was installed autom
 
 Or if you didn't get the cert generated or installed for some reason but have the dotnet-react-sandbox app cloned, you can use these commands from the new project's root (after running npm install at least once):
 
-Generate cert: `npm run opensslGenCert -- --url=local.your-site.com`
+Generate cert: `npm run generateCert -- --url=local.your-site.com`
 
-Install cert: `npm run winInstallCert -- --name=local.your-site.com.pfx`
+Install cert: `npm run winInstallCert -- --url=local.your-site.com`
 
 ## Remove Generated Project
 
@@ -104,4 +104,3 @@ Manual steps to completely remove generated project:
 
 - More documentation
 - No database option that omits the docker/database/auth functionality
-- Static site option (just a plain react site with no dotnet backend)
