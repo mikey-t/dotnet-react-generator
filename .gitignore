@@ -6,3 +6,4 @@ packed
 .idea
 packed-test/generator-test
 *.tgz
+deps.txt

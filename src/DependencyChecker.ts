@@ -1,7 +1,7 @@
-const {waitForProcess, defaultSpawnOptions} = require('@mikeyt23/node-cli-utils')
-const {spawn, spawnSync} = require('child_process')
+const { waitForProcess, defaultSpawnOptions } = require('@mikeyt23/node-cli-utils')
+const { spawn, spawnSync } = require('child_process')
 const which = require('which')
-const chalk = require('chalk')
+import chalk from 'chalk'
 const process = require('process')
 
 export type Platform = 'win' | 'linux' | 'mac'
@@ -45,7 +45,7 @@ export default class DependencyChecker {
     if (dependenciesReport === null) {
       return false
     }
-    let failures = Object.fromEntries(Object.entries(dependenciesReport).filter(([, v]) => !v));
+    let failures = Object.fromEntries(Object.entries(dependenciesReport).filter(([, v]) => !v))
     return Object.keys(failures).length === 0
   }
 
@@ -85,7 +85,7 @@ export default class DependencyChecker {
 
   async winHasElevatedPerms(): Promise<boolean> {
     try {
-      const spawnOptions = {...defaultSpawnOptions, stdio: 'ignore'}
+      const spawnOptions = { ...defaultSpawnOptions, stdio: 'ignore' }
       await waitForProcess(spawn('net', ['session'], spawnOptions))
       return true
     } catch {
@@ -99,15 +99,15 @@ export default class DependencyChecker {
   }
 
   async hasGit(): Promise<boolean> {
-    return which.sync('git', {nothrow: true}) !== null
+    return which.sync('git', { nothrow: true }) !== null
   }
 
   async hasDotnetSdkGreaterThanOrEqualTo(minimumMajorVersion: number): Promise<boolean> {
-    if (!which.sync('dotnet', {nothrow: true})) {
+    if (!which.sync('dotnet', { nothrow: true })) {
       return false
     }
 
-    let childProc = spawnSync('dotnet', ['--list-sdks'], {encoding: 'utf-8'})
+    let childProc = spawnSync('dotnet', ['--list-sdks'], { encoding: 'utf-8' })
     if (childProc.error) {
       return false
     }
@@ -125,11 +125,11 @@ export default class DependencyChecker {
   }
 
   async hasNodejsGreaterThanOrEqualTo(minimumMajorVersion: number): Promise<boolean> {
-    if (!which.sync('node', {nothrow: true})) {
+    if (!which.sync('node', { nothrow: true })) {
       return false
     }
 
-    let childProc = spawnSync('node', ['-v'], {encoding: 'utf-8'})
+    let childProc = spawnSync('node', ['-v'], { encoding: 'utf-8' })
     if (childProc.error) {
       return false
     }
@@ -154,7 +154,7 @@ export default class DependencyChecker {
   }
 
   async hasDocker(): Promise<boolean> {
-    return !!which.sync('docker', {nothrow: true})
+    return !!which.sync('docker', { nothrow: true })
   }
 
   async hasOpenssl(): Promise<boolean> {
@@ -170,9 +170,9 @@ export default class DependencyChecker {
         return false
       }
 
-      return !output.toLowerCase().startsWith('error');
+      return !output.toLowerCase().startsWith('error')
     }
 
-    return !!which.sync('openssl', {nothrow: true})
+    return !!which.sync('openssl', { nothrow: true })
   }
 }

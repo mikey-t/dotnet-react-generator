@@ -1,10 +1,18 @@
 # dotnet-react-generator
 
-Node script to generate a new project based on the repo [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-sandbox).
+This is a node script that can generate a new project based on the repo [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-sandbox). The generated project is setup to have a vite typescript react app and a .net 6 webapi that work together locally with https without browser warnings and without the awful "spa proxy" nonsense Microsoft has in their "built-in" react template. This script is mean to be run with `npx` so you don't have to install it explicitly.
 
-Example (assuming you have a directory at `~/src`):
+You must run this script with elevated permissions because it adds a host entry, generates an SSL certificate and installs the certificate as trusted. On mac and linux it will generate the cert but not install it (see notes below).
 
-```Powershell
+Requires NodeJS >= 16 to run the script, but you will also need the following for the script to generate and run the new project:
+- Git
+- Dotnet SDK 6
+- Docker
+- OpenSSL
+
+Example for windows (see below for additional steps required on mac and linux):
+
+```
 cd ~/src
 npx -y dotnet-react-generator@latest -o acme -u acme.com -d acme
 cd acme
@@ -23,12 +31,14 @@ Then navigate to https://local.acme.com.
 
 ## What It Does
 
-- Clone [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-sandbox) into directory specified with `-o` option
-- Update placeholders based on options passed (mostly in .env.template)
-- Add hosts entry: `127.0.0.1 local.<specified url>`
-- Npm install inside root of new project directory
-- Sync .env files (sync .env.template to .env and copy to all relevant directories)
-- Install or update dotnet ef tool (for database migrations)
+- Checks that you have all pre-requisites met
+- Clones [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-sandbox) into directory specified with `-o` option
+- Updates placeholders based on options passed (mostly in .env.template)
+- Sets up a docker-compose with a postgres database named from your `-d` option
+- Adds hosts entry: `127.0.0.1 local.<specified url from -u option>`
+- Runs npm install inside root of new project directory
+- Syncs .env files (sync .env.template to .env and copy to all relevant directories)
+- Installs or updates dotnet-ef tool (for database migrations)
 - Generate self-signed SSL cert (for local use only)
 - Install generated SSL cert into trusted store (for trusted local https)
 - Npm install inside new project's client app directory (`<new project directory>/src/client`)
@@ -100,7 +110,6 @@ Manual steps to completely remove generated project:
 - Depending on what version of npm you have installed, if you have run the npx command before and there's a new version available, `npx` won't get the new version unless you explicitly add `@latest` (or specific version) to the command, or explicitly clear your npx cache. 
 - If you run npx within an existing node project it will look in the project-local node_modules bin and won't find dotnet-react-generator. You must run it from a non-node project directory.
 
-## TODO
+## Development
 
-- More documentation
-- No database option that omits the docker/database/auth functionality
+See [Development Notes](./docs/dev.md).

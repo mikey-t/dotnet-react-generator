@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 
-import {Command, Option, OptionValues} from 'commander'
+import { Command, Option, OptionValues } from 'commander'
 import 'source-map-support/register'
 import ProjectGenerator from './ProjectGenerator'
 import DependencyChecker from './DependencyChecker'
 import chalk from 'chalk'
+import path from 'path'
+import fs from 'fs'
 
-const version = '0.0.15'
-const {performance} = require('perf_hooks')
+const packageJsonPath = path.join(__dirname, '../../package.json')
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+const version = packageJson.version
+
+const { performance } = require('perf_hooks')
 
 const program = new Command()
 const cwd = process.cwd()
