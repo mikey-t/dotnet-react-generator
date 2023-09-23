@@ -9,7 +9,7 @@ import GeneratorArgs from './GeneratorArgs.js'
 import PlaceholderProcessor from './PlaceholderProcessor.js'
 import { spawnAsync } from '@mikeyt23/node-cli-utils'
 
-const useLocalFilesInsteadOfCloning = true // Combine true value here with 'swig cloneSandboxIntoTemp' to speed up dev loop
+const useLocalFilesInsteadOfCloning = false // Combine true value here with 'swig cloneSandboxIntoTemp' to speed up dev loop
 
 export default class ProjectGenerator {
   private readonly cwd: string
