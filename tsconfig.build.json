@@ -1,23 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2020",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "noEmit": true,
+    "outDir": "./dist",
+    "declaration": true,
+    "inlineSourceMap": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
     "baseUrl": "./",
-    "types": [
-      "node"
-    ]
   },
   "include": [
-    "swigfile.ts",
-    "src/**/*.ts",
-    "test/ProjectGenerator.test.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     ".vscode",
@@ -27,7 +24,6 @@
     "git-repo-temp",
     "node_modules",
     "packed",
-    "packed-test",
-    "test/tmp"
+    "packed-test"
   ]
 }

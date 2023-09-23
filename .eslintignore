@@ -1,0 +1,5 @@
+*
+!swigfile.ts
+!src/**/*.ts
+!test/ProjectGenerator.test.ts
+

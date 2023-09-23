@@ -1,30 +1,28 @@
-const { waitForProcess, defaultSpawnOptions } = require('@mikeyt23/node-cli-utils')
-const { spawn, spawnSync } = require('child_process')
-const which = require('which')
+import { spawnSync } from 'node:child_process'
 import chalk from 'chalk'
-const process = require('process')
+import { platform as rawPlatformString } from 'node:process'
+import { whichSync, isPlatformWindows, isPlatformLinux, isPlatformMac, spawnAsync } from '@mikeyt23/node-cli-utils'
 
 export type Platform = 'win' | 'linux' | 'mac'
 type DependenciesReport = { [id: string]: boolean }
 
 export default class DependencyChecker {
-  private readonly _platform: Platform
+  private readonly platform: Platform
 
   constructor() {
-    this._platform = this.getPlatform()
+    this.platform = this.getPlatform()
   }
 
   getPlatform(): Platform {
-    const platform = process.platform
 
-    if (platform === 'win32') {
+    if (isPlatformWindows()) {
       return 'win'
-    } else if (platform === 'darwin') {
+    } else if (isPlatformMac()) {
       return 'mac'
-    } else if (platform === 'linux') {
+    } else if (isPlatformLinux()) {
       return 'linux'
     } else {
-      throw Error(`Platform not supported: ${platform}. Nodejs process.platform must be win32, darwin or linux.`)
+      throw Error(`Platform not supported: ${rawPlatformString}. Nodejs process.platform must be win32, darwin or linux.`)
     }
   }
 
@@ -60,7 +58,7 @@ export default class DependencyChecker {
     let str = '\n'
 
     const platformKeyPadding = ' '.repeat(longestKeyLength - platformKey.length)
-    str += `${platformKey}${platformKeyPadding}: ${this._platform}\n`
+    str += `${platformKey}${platformKeyPadding}: ${this.platform}\n`
 
     for (let k in report) {
       const hasIt = report[k]
@@ -72,11 +70,11 @@ export default class DependencyChecker {
   }
 
   async hasElevatedPermissions(): Promise<boolean> {
-    if (this._platform === 'win') {
+    if (this.platform === 'win') {
       return await this.winHasElevatedPerms()
-    } else if (this._platform === 'linux') {
+    } else if (this.platform === 'linux') {
       return await this.linuxHasElevatedPerms()
-    } else if (this._platform === 'mac') {
+    } else if (this.platform === 'mac') {
       return await this.linuxHasElevatedPerms()
     }
 
@@ -85,8 +83,7 @@ export default class DependencyChecker {
 
   async winHasElevatedPerms(): Promise<boolean> {
     try {
-      const spawnOptions = { ...defaultSpawnOptions, stdio: 'ignore' }
-      await waitForProcess(spawn('net', ['session'], spawnOptions))
+      await spawnAsync('net', ['session'], { throwOnNonZero: true, stdio: 'ignore' })
       return true
     } catch {
       return false
@@ -94,16 +91,19 @@ export default class DependencyChecker {
   }
 
   async linuxHasElevatedPerms(): Promise<boolean> {
+    if (!process.getuid) {
+      throw new Error('Cannot determine if linux user has elevated permissions (process.getuid is undefined)')
+    }
     const uid = process.getuid()
     return uid === 0
   }
 
   async hasGit(): Promise<boolean> {
-    return which.sync('git', { nothrow: true }) !== null
+    return !!whichSync('git').location
   }
 
   async hasDotnetSdkGreaterThanOrEqualTo(minimumMajorVersion: number): Promise<boolean> {
-    if (!which.sync('dotnet', { nothrow: true })) {
+    if (!whichSync('dotnet').location) {
       return false
     }
 
@@ -125,7 +125,7 @@ export default class DependencyChecker {
   }
 
   async hasNodejsGreaterThanOrEqualTo(minimumMajorVersion: number): Promise<boolean> {
-    if (!which.sync('node', { nothrow: true })) {
+    if (!whichSync('node').location) {
       return false
     }
 
@@ -154,11 +154,11 @@ export default class DependencyChecker {
   }
 
   async hasDocker(): Promise<boolean> {
-    return !!which.sync('docker', { nothrow: true })
+    return !!whichSync('docker')
   }
 
   async hasOpenssl(): Promise<boolean> {
-    if (this._platform === 'mac') {
+    if (this.platform === 'mac') {
       let childProc = spawnSync('brew', ['--prefix', 'openssl'], { encoding: 'utf-8' })
       if (childProc.error) {
         return false
@@ -173,6 +173,6 @@ export default class DependencyChecker {
       return !output.toLowerCase().startsWith('error')
     }
 
-    return !!which.sync('openssl', { nothrow: true })
+    return !!whichSync('openssl').location
   }
 }

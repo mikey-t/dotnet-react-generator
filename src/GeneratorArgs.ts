@@ -1,7 +1,7 @@
-import {OptionValues} from 'commander'
+import { OptionValues } from 'commander'
 
-const path = require('path')
-const os = require('os')
+import path from 'node:path'
+import os from 'node:os'
 
 type ProjectType = 'full' | 'no-db' | 'static'
 

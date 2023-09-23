@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 
 import { Command, Option, OptionValues } from 'commander'
-import 'source-map-support/register'
-import ProjectGenerator from './ProjectGenerator'
-import DependencyChecker from './DependencyChecker'
+import ProjectGenerator from './ProjectGenerator.js'
+import DependencyChecker from './DependencyChecker.js'
 import chalk from 'chalk'
 import path from 'path'
 import fs from 'fs'
+import { performance } from 'node:perf_hooks'
+import { fileURLToPath } from 'url'
 
-const packageJsonPath = path.join(__dirname, '../../package.json')
+const dirname = fileURLToPath(import.meta.url)
+const cwd = process.cwd()
+const packageJsonPath = path.join(dirname, '../../package.json')
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
 const version = packageJson.version
 
-const { performance } = require('perf_hooks')
-
 const program = new Command()
-const cwd = process.cwd()
 const startTime = performance.now()
 
 const cleanupCalled = process.argv.includes('--cleanup-example')

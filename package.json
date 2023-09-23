@@ -1,6 +1,6 @@
 {
   "name": "dotnet-react-generator",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "A nodejs CLI util to generate a new .net react website project based on the dotnet-react-sandbox repo.",
   "repository": {
     "type": "git",
@@ -13,12 +13,14 @@
   ],
   "author": "Mike Thompson",
   "license": "MIT",
-  "main": "dist/src/index.js",
-  "bin": "dist/src/index.js",
-  "types": "dist/src/index.d.js",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
-    "build": "gulp build",
-    "example": "node dist/src/index.js --output=example-project --url=example.mikeyt.net --db-name=example_mikeyt --overwrite",
     "exampleAbsolutePath": "node dist/src/index.js --output=C:\\temp\\example-project --url=example.mikeyt.net --db-name=example_mikeyt --overwrite",
     "noargs": "node dist/src/index.js",
     "help": "node dist/src/index.js -h",
@@ -38,29 +40,21 @@
     "generateNpmDepsFile": "npm ls --depth=10 > deps.txt"
   },
   "dependencies": {
-    "@mikeyt23/node-cli-utils": "^1.4.1",
-    "chalk": "^4.1.2",
-    "commander": "^11.0.0",
-    "fs-extra": "^11.1.1",
-    "source-map-support": "^0.5.21",
-    "which": "^3.0.1"
+    "@mikeyt23/node-cli-utils": "^2.0.0-beta.1",
+    "chalk": "^5.3.0",
+    "commander": "^11.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.5",
-    "@types/fs-extra": "^11.0.1",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "^20.4.9",
-    "@types/source-map-support": "^0.5.6",
-    "@typescript-eslint/eslint-plugin": "^6.3.0",
-    "@typescript-eslint/parser": "^6.3.0",
-    "chai": "^4.3.7",
-    "eslint": "^8.47.0",
-    "gulp": "^4.0.2",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
-    "typescript": "^5.1.6"
+    "@types/node": "^18.17.17",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
+    "eslint": "^8.49.0",
+    "swig-cli": "^0.0.14",
+    "tsx": "^3.12.10",
+    "typescript": "^5.2.2"
   },
   "volta": {
-    "node": "18.16.0"
+    "node": "18.18.0"
   }
 }

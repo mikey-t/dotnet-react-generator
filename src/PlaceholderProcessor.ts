@@ -1,17 +1,17 @@
-const fs = require('fs-extra')
+import fsp from 'node:fs/promises'
 
 export default class PlaceholderProcessor {
-  private readonly _cwd: string
+  private readonly cwd: string
 
   constructor(currentWorkingDirectory: string) {
-    this._cwd = currentWorkingDirectory
+    this.cwd = currentWorkingDirectory
   }
 
-  replace(filePath: string, oldValue: string, newValue: string): void {
-    const relativeFilePath = filePath.replace(this._cwd, '')
+  async replace(filePath: string, oldValue: string, newValue: string): Promise<void> {
+    const relativeFilePath = filePath.replace(this.cwd, '')
     console.log(`replacing ${oldValue} with ${newValue} in ${relativeFilePath}`)
 
-    let fileString = fs.readFileSync(filePath, 'utf-8')
+    let fileString = await fsp.readFile(filePath, { encoding: 'utf-8' })
 
     const startIndex = fileString.indexOf(oldValue)
     if (startIndex < 0) {
@@ -20,12 +20,12 @@ export default class PlaceholderProcessor {
 
     const updatedFileString = fileString.replace(oldValue, newValue)
 
-    fs.writeFileSync(filePath, updatedFileString)
+    await fsp.writeFile(filePath, updatedFileString, { encoding: 'utf-8' })
   }
 
-  replaceFile(filePath: string, newFileContents: string): void {
-    const relativeFilePath = filePath.replace(this._cwd, '')
+  async replaceFile(filePath: string, newFileContents: string): Promise<void> {
+    const relativeFilePath = filePath.replace(this.cwd, '')
     console.log(`replacing entire contents of ${relativeFilePath}`)
-    fs.writeFileSync(filePath, newFileContents)
+    await fsp.writeFile(filePath, newFileContents, { encoding: 'utf-8' })
   }
 }

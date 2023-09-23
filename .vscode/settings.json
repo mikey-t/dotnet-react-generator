@@ -1,0 +1,17 @@
+{
+  "[typescript]": {
+    "editor.autoIndent": "full",
+    "editor.trimAutoWhitespace": false
+  },
+  "[javascript]": {
+    "editor.autoIndent": "full",
+    "editor.trimAutoWhitespace": false
+  },
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single",
+  "javascript.format.semicolons": "remove",
+  "typescript.format.semicolons": "remove",
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "relative"
+}
