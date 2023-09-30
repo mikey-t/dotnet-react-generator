@@ -1,6 +1,6 @@
 {
   "name": "dotnet-react-generator",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "A nodejs CLI util to generate a new .net react website project based on the dotnet-react-sandbox repo.",
   "repository": {
     "type": "git",
@@ -21,37 +21,20 @@
     "dist/"
   ],
   "scripts": {
-    "exampleAbsolutePath": "node dist/src/index.js --output=C:\\temp\\example-project --url=example.mikeyt.net --db-name=example_mikeyt --overwrite",
-    "noargs": "node dist/src/index.js",
-    "help": "node dist/src/index.js -h",
-    "cleanupExample": "node dist/src/index.js --cleanup-example",
-    "watch": "gulp watch",
-    "test": "mocha || exit 0",
-    "test:coverage": "nyc mocha || exit 0",
-    "clean": "gulp clean",
-    "pack": "gulp pack",
-    "installPackedGlobal": "gulp installPackedGlobal",
-    "uninstallGlobal": "gulp uninstallGlobal",
-    "tsc": "tsc",
-    "buildAndPublish": "gulp buildAndPublish",
-    "cloneRepoIntoTempDir": "gulp cloneRepoIntoTempDir",
-    "cleanPackedTest": "gulp cleanPackedTest",
-    "checkDepsOnly": "node dist/src/index.js --deps",
-    "generateNpmDepsFile": "npm ls --depth=10 > deps.txt"
+    "watch": "tsc -w"
   },
   "dependencies": {
-    "@mikeyt23/node-cli-utils": "^2.0.0-beta.1",
-    "chalk": "^5.3.0",
     "commander": "^11.0.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.5",
-    "@types/node": "^18.17.17",
-    "@typescript-eslint/eslint-plugin": "^6.7.2",
-    "@typescript-eslint/parser": "^6.7.2",
-    "eslint": "^8.49.0",
+    "@mikeyt23/node-cli-utils": "^2.0.0-beta.2",
+    "@types/node": "^18.18.1",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.50.0",
     "swig-cli": "^0.0.14",
-    "tsx": "^3.12.10",
+    "tsx": "^3.13.0",
     "typescript": "^5.2.2"
   },
   "volta": {

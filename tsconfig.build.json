@@ -19,11 +19,11 @@
   "exclude": [
     ".vscode",
     "dist",
-    "docs",
     "example-project",
     "git-repo-temp",
     "node_modules",
     "packed",
-    "packed-test"
+    "packed-test",
+    "test"
   ]
 }

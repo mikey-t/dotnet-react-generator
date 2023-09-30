@@ -1,5 +1,8 @@
-*
-!swigfile.ts
-!src/**/*.ts
-!test/ProjectGenerator.test.ts
+.vscode
+dist
+git-repo-temp
+node_modules
+packed
+packed-test
+test/temp/*
 

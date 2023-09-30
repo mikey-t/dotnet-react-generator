@@ -4,13 +4,18 @@ import fsp from 'node:fs/promises'
 import path from 'node:path'
 import * as nodeCliUtils from '@mikeyt23/node-cli-utils'
 
+const eslintPath = './node_modules/eslint/bin/eslint.js'
 const tsxArgs = ['--no-warnings', '--loader', 'tsx']
 const tsxIndexArgs = [...tsxArgs, 'src/index.ts']
 const testFiles = ['./test/ProjectGenerator.test.ts']
 
+export async function lint() {
+  await nodeCliUtils.spawnAsync('node', [eslintPath, '--ext', '.ts', './src', './test'], { throwOnNonZero: true })
+}
+
 export const build = series(cleanDist, doBuild)
+export const watch = series(cleanDist, doWatch)
 export const pack = series(cleanDist, doBuild, doPack)
-export const buildAndPublish = series(cleanDist, doBuild, printMessageIfReadyToPublish)
 
 export async function cleanDist() {
   await nodeCliUtils.emptyDirectory('./dist')
@@ -32,7 +37,7 @@ export async function cleanPackedTest() {
   })
 }
 
-export async function runExample() {
+export async function genExample() {
   const args = [...tsxIndexArgs, '--output=example-project', '--url=example.mikeyt.net', '--db-name=example_mikeyt', '--overwrite']
   await nodeCliUtils.spawnAsync('node', args)
 }
@@ -70,6 +75,10 @@ async function doBuild() {
   await nodeCliUtils.spawnAsync('node', ['./node_modules/typescript/lib/tsc.js', '--p', 'tsconfig.build.json'])
 }
 
+async function doWatch() {
+  await nodeCliUtils.spawnAsyncLongRunning('node', ['./node_modules/typescript/lib/tsc.js', '--p', 'tsconfig.build.json', '--watch'])
+}
+
 async function doPack() {
   const packedDir = './packed'
   if (fs.existsSync(packedDir)) {
@@ -93,14 +102,4 @@ async function doPack() {
 
   console.log('moving tarball to packed dir')
   await fsp.rename(tarballs[0], path.join('packed', tarballs[0]))
-}
-
-async function printMessageIfReadyToPublish() {
-  const generatorFile = './src/ProjectGenerator.ts'
-  const generatorFileContents = await fsp.readFile(generatorFile, 'utf8')
-  if (generatorFileContents.includes('useLocalFilesInsteadOfCloning = true')) {
-    throw new Error('./src/ProjectGenerator.ts has useLocalFilesInsteadOfCloning set to true - will not publish')
-  } else {
-    console.log(`✨ no temp code - ready to publish ✨ (run 'npm publish')`)
-  }
 }

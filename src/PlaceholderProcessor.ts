@@ -11,7 +11,7 @@ export default class PlaceholderProcessor {
     const relativeFilePath = filePath.replace(this.cwd, '')
     console.log(`replacing ${oldValue} with ${newValue} in ${relativeFilePath}`)
 
-    let fileString = await fsp.readFile(filePath, { encoding: 'utf-8' })
+    const fileString = await fsp.readFile(filePath, { encoding: 'utf-8' })
 
     const startIndex = fileString.indexOf(oldValue)
     if (startIndex < 0) {

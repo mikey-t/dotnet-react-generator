@@ -7,4 +7,4 @@ packed
 packed-test/generator-test
 *.tgz
 deps.txt
-test/tmp
+test/temp

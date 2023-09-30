@@ -17,7 +17,8 @@
   "include": [
     "swigfile.ts",
     "src/**/*.ts",
-    "test/ProjectGenerator.test.ts"
+    "test/ProjectGenerator.test.ts",
+    "test/testUtils.ts"
   ],
   "exclude": [
     ".vscode",
@@ -28,6 +29,6 @@
     "node_modules",
     "packed",
     "packed-test",
-    "test/tmp"
+    "test/temp"
   ]
 }

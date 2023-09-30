@@ -1,48 +1,87 @@
-import fs from 'node:fs'
-import fsp from 'node:fs/promises'
 import assert from 'node:assert'
-import { it } from 'node:test'
-import { emptyDirectory, mkdirp } from '@mikeyt23/node-cli-utils'
+import { it, describe, before, beforeEach } from 'node:test'
 import ProjectGenerator from '../src/ProjectGenerator.js'
 import path from 'node:path'
+import { assertProjectExists, ensureEmptyTempDir, validateGitRepoTempExists, tempDir, assertErrorMessageStartsWith, assertGeneratedEnvContains, only } from './testUtils.js'
 
-const tmpDir = 'test/tmp'
+console.log(`\nDon't forget to get a fresh copy of dotnet-react-sandbox with 'swig cloneSandboxIntoTemp'.\n`)
 
-if (!fs.existsSync(tmpDir)) {
-  await mkdirp(tmpDir)
+const defaultOptions = {
+  output: 'example-project',
+  url: 'example.mikeyt.net',
+  dbName: 'example_mikeyt',
+  overwrite: true
 }
 
-async function ensureGitRepoTemp() {
-  const gitRepoTempPath = 'git-repo-temp'
-  const repoTmpPath = 'test/tmp/git-repo-temp'
-  if (!fs.existsSync('git-repo-temp')) {
-    throw new Error('git-repo-temp does not exist. Run "swig cloneSandboxIntoTemp" first.')
-  }
-  await emptyDirectory(repoTmpPath)
-  await fsp.cp(gitRepoTempPath, repoTmpPath, { recursive: true })
-}
+describe('ProjectGenerator.generateProject', only, () => {
+  before(async () => {
+    await validateGitRepoTempExists()
+  })
+  beforeEach(async () => {
+    await ensureEmptyTempDir()
+  })
+  it('generates a project with default options', async () => {
+    await new ProjectGenerator(defaultOptions, tempDir).generateProject()
+    assertProjectExists(path.join(tempDir, defaultOptions.output))
+  })
+  it('works with a relative path', async () => {
+    const outputPath = 'sub-dir/project-name'
+    const options = { ...defaultOptions, output: outputPath }
 
-async function ensureNoExampleProject() {
-  const exampleProjectPath = path.join(tmpDir, 'example-project')
-  if (fs.existsSync(exampleProjectPath)) {
-    await fsp.rm(exampleProjectPath, { recursive: true, force: true })
-  }
-}
+    await new ProjectGenerator(options, tempDir).generateProject()
 
-it('generates an example project correctly', async () => {
-  await ensureGitRepoTemp()
-  await ensureNoExampleProject()
-  
-  const exampleCommanderOpts = {
-    output: 'example-project',
-    url: 'example.mikeyt.net',
-    dbName: 'example_mikeyt',
-    overwrite: true
-  }
-  
-  await new ProjectGenerator(exampleCommanderOpts, tmpDir).generateProject()
+    assertProjectExists(path.join(tempDir, outputPath))
+  })
+  it('works with an absolute output path', async () => {
+    const outputPath = path.resolve(tempDir, 'sub-dir/project-name')
+    console.log(`absolute outputPath: ${outputPath}`)
+    const options = { ...defaultOptions, output: outputPath }
 
-  assert.ok(true)
+    await new ProjectGenerator(options, tempDir).generateProject()
+
+    assertProjectExists(outputPath)
+  })
+  it('strips the protocol from the provided url', only, async () => {
+    const options = { ...defaultOptions, url: 'http://example.mikeyt.net' }
+
+    await new ProjectGenerator(options, tempDir).generateProject()
+
+    const outputPath = path.join(tempDir, defaultOptions.output)
+    const envTemplatePath = path.join(outputPath, '.env.template')
+    assertProjectExists(outputPath)
+    assertGeneratedEnvContains(envTemplatePath, 'JWT_ISSUER=example.mikeyt.net')
+    assertGeneratedEnvContains(envTemplatePath, 'SITE_URL=example.mikeyt.net')
+  })
 })
 
-it.todo('does not allow using a bad project name')
+describe('ProjectGenerator.ctor', () => {
+  before(async () => {
+    await validateGitRepoTempExists()
+  })
+  beforeEach(async () => {
+    await ensureEmptyTempDir()
+  })
+  it('throws if bad chars in path', async () => {
+    const options = { ...defaultOptions, output: 'this<is>a-bad-path/project-name' }
+
+    await assert.rejects(
+      new ProjectGenerator(options, tempDir).generateProject(),
+      err => assertErrorMessageStartsWith(err, 'Error creating directory')
+    )
+  })
+  it('throws if the project name is invalid', async () => {
+    const options = { ...defaultOptions, output: 'bad-chars-!@#$%^&*()' }
+    assert.throws(
+      () => new ProjectGenerator(options, tempDir),
+      err => assertErrorMessageStartsWith(err, 'Project name is invalid')
+    )
+  })
+
+  it('throws if the database name is invalid', async () => {
+    const options = { ...defaultOptions, dbName: 'db-name-with-dashes' }
+    assert.throws(
+      () => new ProjectGenerator(options, tempDir),
+      err => assertErrorMessageStartsWith(err, 'Database name is invalid')
+    )
+  })
+})

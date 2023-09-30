@@ -1,15 +1,15 @@
-import { mkdirp } from '@mikeyt23/node-cli-utils'
-import chalk from 'chalk'
+import { ExtendedError, getNormalizedError, green, mkdirp, spawnAsync, which } from '@mikeyt23/node-cli-utils'
 import { OptionValues } from 'commander'
+import 'dotenv/config'
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import path from 'path'
 import { performance } from 'perf_hooks'
 import GeneratorArgs from './GeneratorArgs.js'
 import PlaceholderProcessor from './PlaceholderProcessor.js'
-import { spawnAsync } from '@mikeyt23/node-cli-utils'
 
-const useLocalFilesInsteadOfCloning = false // Combine true value here with 'swig cloneSandboxIntoTemp' to speed up dev loop
+// Combine env var with command "swig cloneSandboxIntoTemp" to speed up dev loop
+const useLocalFilesInsteadOfCloning = process.env.USE_LOCAL_INSTEAD_OF_CLONING === 'true'
 
 export default class ProjectGenerator {
   private readonly cwd: string
@@ -23,8 +23,9 @@ export default class ProjectGenerator {
     this.args = generatorArgs
     this.cwd = currentWorkingDirectory
     this.generatedProjectPath = generatorArgs.outputAbsolutePath
-    this.localUrl = `local.${generatorArgs.url}`
+    this.localUrl = generatorArgs.url
     this.validateProjectName(this.args.projectName)
+    this.validateDbName(this.args.dbName)
     this.composeProjectName = this.getComposeProjectNameFromProjectName(this.args.projectName)
   }
 
@@ -35,16 +36,35 @@ export default class ProjectGenerator {
   }
 
   async generateProject() {
+    await this.doStep(async () => this.checkDependencies(), 'check dependencies')
     await this.doStep(async () => this.ensureEmptyOutputDirectory(), 'ensure empty output directory')
     await this.doStep(async () => this.cloneProject(), 'clone project')
     await this.doStep(async () => this.updatePlaceholders(), 'update placeholders')
-    // TODO: new step to copy readme and docs to new docs subdirectory and copy in new fresh readme to the root of the new project
+    await this.doStep(async () => this.adjustDocs(), 'add readme file to generated project')
   }
 
-  // The projectName must be a valid directory name for the OS
+  private async adjustDocs() {
+    const readmePath = path.join(this.generatedProjectPath, 'readme.md')
+
+    const generatedProjectDocsPath = path.join(this.generatedProjectPath, 'docs')
+    await mkdirp(generatedProjectDocsPath)
+    const newReadmePath = path.join(generatedProjectDocsPath, 'dotnet-react-sandbox.md')
+    fs.renameSync(readmePath, newReadmePath)
+
+    fs.writeFileSync(readmePath, placeholderReadme.replace('{{PROJECT_NAME}}', this.args.projectName))
+  }
+
   private validateProjectName(projectName: string) {
-    if (!this.isValidDirName(projectName)) {
-      throw Error(`Project name ${projectName} is invalid. It must contain only characters that are valid for directory names.`)
+    const regex = /^[a-zA-Z0-9][a-zA-Z0-9\-_.]*$/
+    if (projectName.length > 80 || !regex.test(projectName)) {
+      throw new Error(`Project name is invalid: ${projectName}. It must be less than 80 characters, start with a letter or number, and must only container letters, numbers and these special characters: "-_."`)
+    }
+  }
+
+  private validateDbName(dbName: string) {
+    const regex = /^[a-zA-Z][a-zA-Z0-9_]*$/
+    if (dbName.length > 80 || !regex.test(dbName)) {
+      throw new Error(`Database name is invalid: ${dbName}. It must be less than 80 characters, start with a letter, and must only container letters, numbers and underscores.`)
     }
   }
 
@@ -58,16 +78,9 @@ export default class ProjectGenerator {
     return sanitized
   }
 
-  isValidDirName = (dirName: string): boolean => {
-    // A regex pattern that excludes any characters not allowed in directory names across major OS
-    const pattern = /^[^<>:"/\\|?*\x00-\x1F]+$/
-    return pattern.test(dirName)
-  }
-
-  private validateComposeProjectName(composeProjectName: string) {
-    const regex = /^[a-z0-9][a-z0-9_-]*$/g
-    if (!regex.test(composeProjectName)) {
-      throw Error(`COMPOSE_PROJECT_NAME ${composeProjectName} is invalid. It must contain only lowercase letters, decimal digits, dashes, and underscores, and must begin with a lowercase letter or decimal digit.`)
+  private async checkDependencies() {
+    if (!(await which('git')).location) {
+      throw new Error('git is not installed. Install git and try again.')
     }
   }
 
@@ -88,12 +101,22 @@ export default class ProjectGenerator {
   }
 
   private async cloneProject() {
-    await mkdirp(this.generatedProjectPath)
+    try {
+      await mkdirp(this.generatedProjectPath)
+    } catch (err) {
+      throw new ExtendedError(`Error creating directory ${this.generatedProjectPath}`, getNormalizedError(err))
+    }
 
     if (useLocalFilesInsteadOfCloning) {
-      const gitRepoTempPath = path.join(this.cwd, 'git-repo-temp')
+      const tempRepoDir = 'git-repo-temp'
+      console.log(`using local files instead of cloning: ${tempRepoDir}`)
+      const gitRepoTempPath = path.resolve(tempRepoDir)
+      if (!fs.existsSync(gitRepoTempPath)) {
+        throw new Error(`git-repo-temp does not exist. Run "swig cloneSandboxIntoTemp" first.`)
+      }
       await fsp.cp(gitRepoTempPath, this.generatedProjectPath, { recursive: true })
     } else {
+      console.log('cloning project from github')
       const cloneArgs = `clone -b main --single-branch --depth 1 https://github.com/mikey-t/dotnet-react-sandbox.git ${this.generatedProjectPath}`.split(' ')
       await spawnAsync('git', cloneArgs, { throwOnNonZero: true })
     }
@@ -122,21 +145,22 @@ export default class ProjectGenerator {
     await processor.replace(path.join(projectBasePath, 'client/src/components/Copyright.tsx'), 'https://mikeyt.net', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')
   }
 
-  private async doStep(func: Function, stepName: string): Promise<void> {
+  private async doStep(func: () => Promise<void>, stepName: string): Promise<void> {
     const stepStart = performance.now()
-    console.log(chalk.green(`>>> starting: ${stepName}`))
+    console.log(green(`>>> starting: ${stepName}`))
     await func()
     const stepMillis = (performance.now() - stepStart).toFixed(1)
-    console.log(chalk.green(`>>> finished: ${stepName} (${stepMillis}ms)\n`))
-  }
-
-  static async cleanupExampleProject(cwd: string) {
-    console.log('>>> cleaning up example project...')
-    const projectPath = path.join(cwd, 'example-project')
-
-    console.log('deleting example-project directory')
-    if (fs.existsSync(projectPath)) {
-      await fsp.rm(projectPath, { recursive: true })
-    }
+    console.log(green(`>>> finished: ${stepName} (${stepMillis}ms)\n`))
   }
 }
+
+const placeholderReadme = `# {{PROJECT_NAME}}
+
+You generated a new project! Here are some things you should do next:
+
+1. Update this readme.md file.
+2. Update the LICENSE file (keep original license but rename it to something like ORIGINAL_PROJECT_LICENSE).
+3. Follow the setup instructions in [./docs/dotnet-react-sandbox.md](./docs/dotnet-react-sandbox.md).
+4. Init your git repo and push it to github.
+
+`

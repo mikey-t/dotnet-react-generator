@@ -2,8 +2,7 @@ import { OptionValues } from 'commander'
 
 import path from 'node:path'
 import os from 'node:os'
-
-type ProjectType = 'full' | 'no-db' | 'static'
+import { getHostname } from '@mikeyt23/node-cli-utils'
 
 export default class GeneratorArgs {
   public projectName: string
@@ -11,20 +10,15 @@ export default class GeneratorArgs {
   public outputAbsolutePath: string
   public url: string
   public dbName: string
-  public projectType: ProjectType = 'full'
   public overwriteOutputDir: boolean = false
 
   constructor(commanderOpts: OptionValues, currentWorkingDirectory: string) {
-    // console.log('commanderOpts: ', commanderOpts)
     this.output = commanderOpts.output
-    this.url = commanderOpts.url
+    this.url = getHostname(commanderOpts.url)
     this.dbName = commanderOpts.dbName
-    this.projectType = commanderOpts.hasOwnProperty('projectType') ? commanderOpts.projectType : 'full'
     this.overwriteOutputDir = commanderOpts.overwrite
-
     this.outputAbsolutePath = this.getProjectFullPath(commanderOpts.output, currentWorkingDirectory)
     this.projectName = this.getProjectName()
-    // console.log('GeneratorArgs: ', JSON.stringify(this, null, 2))
   }
 
   private getProjectName(): string {
