@@ -51,7 +51,8 @@ If you ran additional setup commands like `npx swig setup` in an elevated shell:
 
 ## NPX Gotchas
 
-- Depending on what version of npm you have installed, if you have run the npx command before and there's a new version available, `npx` won't get the new version unless you explicitly add `@latest` (or specific version) to the command, or explicitly clear your npx cache. 
+- Depending on what version of npm you have installed, if you have run the npx command before and there's a new version available, `npx` won't get the new version unless you explicitly add `@latest` (or specific version) to the command, or explicitly clear your npx cache.
+- Sometimes even when using `@latest` npx still won't pull down a new version unless you also pass the `--ignore-existing` option.
 - If you run npx within an existing node project it will look in the project-local node_modules bin and won't find dotnet-react-generator. You must run it from a non-node project directory.
 
 ## Development
