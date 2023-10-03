@@ -6,7 +6,8 @@ import path from 'path'
 import fs from 'fs'
 import { performance } from 'node:perf_hooks'
 import { fileURLToPath } from 'url'
-import { cyan, green, humanizeTime } from '@mikeyt23/node-cli-utils'
+import { cyan, green } from '@mikeyt23/node-cli-utils/colors'
+import { humanizeTime } from '@mikeyt23/node-cli-utils'
 
 const dirname = fileURLToPath(import.meta.url)
 const cwd = process.cwd()

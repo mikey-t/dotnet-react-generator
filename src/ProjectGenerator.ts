@@ -1,4 +1,5 @@
-import { ExtendedError, getNormalizedError, green, mkdirp, spawnAsync, which } from '@mikeyt23/node-cli-utils'
+import { ExtendedError, getNormalizedError, mkdirp, spawnAsync, which } from '@mikeyt23/node-cli-utils'
+import { green } from '@mikeyt23/node-cli-utils/colors'
 import { OptionValues } from 'commander'
 import 'dotenv/config'
 import fs from 'node:fs'
