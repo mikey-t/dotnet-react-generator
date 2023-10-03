@@ -29,7 +29,7 @@ npx swig client
 
 Then navigate to https://local.acme.com.
 
-Full setup instructions: [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-sandbox)
+Full setup instructions: [https://github.com/mikey-t/dotnet-react-sandbox/blob/main/docs/SocialLogins.md](https://github.com/mikey-t/dotnet-react-sandbox/blob/main/docs/DotnetReactSandbox.md)
 
 ## What It Does
 
@@ -57,4 +57,4 @@ If you ran additional setup commands like `npx swig setup` in an elevated shell:
 
 ## Development
 
-See [./DevNotes.md](./DevNotes.md).
+See [DevNotes.md](./DevNotes.md)

@@ -44,12 +44,9 @@ export default class ProjectGenerator {
   }
 
   private async adjustDocs() {
-    const readmePath = path.join(this.generatedProjectPath, 'readme.md')
+    const readmePath = path.join(this.generatedProjectPath, 'README.md')
 
-    const generatedProjectDocsPath = path.join(this.generatedProjectPath, 'docs')
-    await mkdirp(generatedProjectDocsPath)
-    const newReadmePath = path.join(generatedProjectDocsPath, 'dotnet-react-sandbox.md')
-    fs.renameSync(readmePath, newReadmePath)
+    await fsp.unlink(readmePath)
 
     fs.writeFileSync(readmePath, placeholderReadme.replace('{{PROJECT_NAME}}', this.args.projectName))
   }
@@ -143,6 +140,19 @@ export default class ProjectGenerator {
 
     await processor.replace(path.join(projectBasePath, 'client/src/components/Copyright.tsx'), 'Mike Thompson', 'John Doe')
     await processor.replace(path.join(projectBasePath, 'client/src/components/Copyright.tsx'), 'https://mikeyt.net', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+
+    const oldServerWorkspaceFile = 'server/drs-server.code-workspace'
+    const oldClientWorkspaceFile = 'client/drs-client.code-workspace'
+    const oldServerWorkspaceFilePath = path.join(projectBasePath, oldServerWorkspaceFile)
+    const oldClientWorkspaceFilePath = path.join(projectBasePath, oldClientWorkspaceFile)
+
+    const newServerWorkspaceFilePath = path.join(projectBasePath, oldServerWorkspaceFile.replace('drs', this.args.projectName))
+    const newClientWorkspaceFilePath = path.join(projectBasePath, oldClientWorkspaceFile.replace('drs', this.args.projectName))
+
+    fs.renameSync(oldServerWorkspaceFilePath, newServerWorkspaceFilePath)
+    fs.renameSync(oldClientWorkspaceFilePath, newClientWorkspaceFilePath)
+
+    await processor.replace(newServerWorkspaceFilePath, 'dotnet-react-sandbox.sln', `${this.args.projectName}.sln`)
   }
 
   private async doStep(func: () => Promise<void>, stepName: string): Promise<void> {
