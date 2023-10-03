@@ -37,7 +37,7 @@ Full setup instructions: [dotnet-react-sandbox](https://github.com/mikey-t/dotne
 - Updates placeholders within files based on options passed
 - Sets up a docker-compose for a postgres database named from your `-d` option
 
-For more info see [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-generator).
+For more info see [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react-sandbox).
 
 ## Remove Generated Project
 
@@ -53,7 +53,7 @@ If you ran additional setup commands like `npx swig setup` in an elevated shell:
 
 - Depending on what version of npm you have installed, if you have run the npx command before and there's a new version available, `npx` won't get the new version unless you explicitly add `@latest` (or specific version) to the command, or explicitly clear your npx cache.
 - Sometimes even when using `@latest` npx still won't pull down a new version unless you also pass the `--ignore-existing` option.
-- If you run npx within an existing node project it will look in the project-local node_modules bin and won't find dotnet-react-generator. You must run it from a non-node project directory.
+- If you run npx within an existing node project it may look in the project-local node_modules bin and won't find `dotnet-react-generator`. If this happens, just run it from a non-node project directory or install it globally by running: `npm i -g dotnet-react-generator`.
 
 ## Development
 
