@@ -5,7 +5,7 @@ import path from 'node:path'
 import * as nodeCliUtils from '@mikeyt23/node-cli-utils'
 
 const eslintPath = './node_modules/eslint/bin/eslint.js'
-const tsxArgs = ['--no-warnings', '--loader', 'tsx']
+const tsxArgs = ['--no-warnings', '--import', 'tsx']
 const tsxIndexArgs = [...tsxArgs, 'src/index.ts']
 const testFiles = ['./test/ProjectGenerator.test.ts']
 

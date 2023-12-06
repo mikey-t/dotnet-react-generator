@@ -169,9 +169,9 @@ const placeholderReadme = `# {{PROJECT_NAME}}
 
 You generated a new project! Here are some things you should do next:
 
-1. Update this readme.md file.
-2. Update the LICENSE file (keep original license but rename it to something like ORIGINAL_PROJECT_LICENSE).
-3. Follow the setup instructions in [./docs/dotnet-react-sandbox.md](./docs/dotnet-react-sandbox.md).
-4. Init your git repo and push it to github.
+- Follow the setup instructions in [./docs/DotnetReactSandbox.md](./docs/DotnetReactSandbox.md)
+- Update the LICENSE file (keep original license but rename it to something like ORIGINAL_PROJECT_LICENSE)
+- Update this readme.md file
+- Init your git repo and push it to github
 
 `

@@ -15,7 +15,7 @@ Setup:
     - Run: `swig watch`
 - In temp dir where you want to create a project (pass whatever options you're looking to test): `dotnet-react-generator -o delete-me -u example.com -d delete_me`
 - Refer to dotnet-react-sandbox docs for remaining setup instructions
-- When making changes, just run `swig build` and then re-run `dotnet-generator` command in temp dir
+- Make changes and then re-run `dotnet-generator` command in temp dir
 
 Cleanup:
 
@@ -31,7 +31,7 @@ swig cloneSandboxIntoTemp
 swig test
 swig build
 ```
-- Commit changes
+- Publish npm package changes
 ```
 npm publish
 ```
