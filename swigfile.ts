@@ -17,6 +17,14 @@ export const build = series(cleanDist, doBuild)
 export const watch = series(cleanDist, doWatch)
 export const pack = series(cleanDist, doBuild, doPack)
 
+export const publish = series(
+  lint,
+  build,
+  cloneSandboxIntoTemp,
+  test,
+  ['npmPublish', () => nodeCliUtils.spawnAsync('npm', ['publish', '--registry=https://registry.npmjs.org/'], { throwOnNonZero: true })]
+)
+
 export async function cleanDist() {
   await nodeCliUtils.emptyDirectory('./dist')
 }
