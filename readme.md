@@ -4,7 +4,7 @@ This is a node script that can generate a new project based on the repo [dotnet-
 
 The generated project works on Windows, Linux and Mac, but note that certificate setup has to be done manually on Linux and Mac (see docs for the dotnet-react-sandbox project for more info).
 
-Running this script requires `NodeJS` >= 16 and `Git`.
+Running this script requires `NodeJS` >= 16 and `git`.
 
 If you want to finish the setup of the new project, you'll also need:
 - Dotnet SDK 6
@@ -29,7 +29,7 @@ npx swig client
 
 Then navigate to https://local.acme.com.
 
-Full setup instructions: [https://github.com/mikey-t/dotnet-react-sandbox/blob/main/docs/SocialLogins.md](https://github.com/mikey-t/dotnet-react-sandbox/blob/main/docs/DotnetReactSandbox.md)
+Full setup instructions: [Dotnet React Sandbox](https://github.com/mikey-t/dotnet-react-sandbox/blob/main/docs/DotnetReactSandbox.md)
 
 ## What It Does
 
@@ -43,11 +43,18 @@ For more info see [dotnet-react-sandbox](https://github.com/mikey-t/dotnet-react
 
 If you didn't run additional setup commands after generating the project:
 
-- Delete the created directory
+- Delete the project directory
 
-If you ran additional setup commands like `npx swig setup` in an elevated shell:
+If you ran additional setup commands like `npx swig setup`, you can run this command in an elevated shell (see below for manual steps):
 
-- Run in an elevated shell: `npx swig teardown`
+- Run in an elevated shell within the project: `npx swig teardown`
+- Delete the project directory
+
+Or manually:
+
+- Delete hosts entry
+- Uninstall cert (for details, see [Dotnet React Sandbox](https://github.com/mikey-t/dotnet-react-sandbox/blob/main/docs/DotnetReactSandbox.md))
+- Delete the project directory
 
 ## NPX Gotchas
 
