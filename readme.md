@@ -4,7 +4,7 @@ This is a node script that can generate a new project based on the repo [dotnet-
 
 The generated project works on Windows, Linux and Mac, but note that certificate setup has to be done manually on Linux and Mac (see docs for the dotnet-react-sandbox project for more info).
 
-Running this script requires `NodeJS` >= 16 and `git`.
+Running this script requires `NodeJS` >= 20 and `git`.
 
 If you want to finish the setup of the new project, you'll also need:
 - Dotnet SDK 6

@@ -86,7 +86,6 @@ describe('ProjectGenerator.ctor', () => {
   })
 })
 
-
 it('is the last test so generate one more example so we can examine the generated output manually', async () => {
   await new ProjectGenerator(defaultOptions, tempDir).generateProject()
   assertProjectExists(path.join(tempDir, defaultOptions.output))
