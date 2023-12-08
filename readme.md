@@ -7,7 +7,7 @@ The generated project works on Windows, Linux and Mac, but note that certificate
 Running this script requires `NodeJS` >= 20 and `git`.
 
 If you want to finish the setup of the new project, you'll also need:
-- Dotnet SDK 6
+- Dotnet SDK 8
 - Docker
 - OpenSSL
 
