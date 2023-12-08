@@ -154,6 +154,11 @@ export default class ProjectGenerator {
     fs.renameSync(oldClientWorkspaceFilePath, newClientWorkspaceFilePath)
 
     await processor.replace(newServerWorkspaceFilePath, 'dotnet-react-sandbox.sln', `${this.args.projectName}.sln`)
+    
+    const rootLaunchConfig = path.join(projectBasePath, '.vscode/launch.json')
+    const clientLaunchConfig = path.join(projectBasePath, 'client/.vscode/launch.json')
+    await processor.replace(rootLaunchConfig, 'local.drs.mikeyt.net', this.args.url)
+    await processor.replace(clientLaunchConfig, 'local.drs.mikeyt.net', this.args.url)
   }
 
   private async doStep(func: () => Promise<void>, stepName: string): Promise<void> {
