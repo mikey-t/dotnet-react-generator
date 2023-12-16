@@ -130,7 +130,7 @@ export default class ProjectGenerator {
     await processor.replace(envTemplatePath, 'JWT_ISSUER=drs.mikeyt.net', `JWT_ISSUER=${this.args.url}`)
     await processor.replace(envTemplatePath, 'SITE_URL=local.drs.mikeyt.net', `SITE_URL=${this.localUrl}`)
     await processor.replace(envTemplatePath, 'DB_NAME=drs', `DB_NAME=${this.args.dbName}`)
-    await processor.replace(envTemplatePath, 'DB_NAME=test_drs', `DB_NAME=test_${this.args.dbName}`)
+    await processor.replace(envTemplatePath, 'DB_NAME_TEST=test_drs', `DB_NAME_TEST=test_${this.args.dbName}`)
     await processor.replace(envTemplatePath, 'DB_USER=drs', `DB_USER=${this.args.dbName}`)
     await processor.replace(envTemplatePath, 'COMPOSE_PROJECT_NAME=drs', `COMPOSE_PROJECT_NAME=${this.composeProjectName}`)
 
