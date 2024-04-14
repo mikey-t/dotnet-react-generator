@@ -1,6 +1,6 @@
 {
   "name": "dotnet-react-generator",
-  "version": "0.1.4",
+  "version": "1.0.0",
   "description": "A nodejs CLI util to generate a new .net react website project based on the dotnet-react-sandbox repo.",
   "repository": {
     "type": "git",
@@ -24,17 +24,17 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@mikeyt23/node-cli-utils": "^2.0.33",
+    "@mikeyt23/node-cli-utils": "^2.0.35",
     "commander": "^12.0.0",
-    "dotenv": "^16.4.2"
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
-    "@types/node": "^20.11.17",
+    "@types/node": "^20.12.7",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "eslint": "^8.56.0",
-    "swig-cli": "^0.0.16",
-    "tsx": "^4.7.1",
+    "eslint": "^8.57.0",
+    "swig-cli": "^1.0.1",
+    "tsx": "^4.7.2",
     "typescript": "^5.3.3"
   },
   "volta": {
